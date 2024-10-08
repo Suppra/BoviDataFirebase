@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "950532884031",
+    "project_id": "bovidata-e24a6",
+    "storage_bucket": "bovidata-e24a6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:950532884031:android:70afdadf3ada58b1535a8a",
+        "android_client_info": {
+          "package_name": "com.example.bovinos"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbnTaY5nKAyMGuagQ67-ctfEthcskzhl4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
