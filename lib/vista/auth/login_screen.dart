@@ -15,8 +15,8 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _validateUser() async {
     try {
-      UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _userController.text,
         password: _passwordController.text,
       );
@@ -30,11 +30,14 @@ class _LoginPageState extends State<LoginPage> {
         String userType = userDoc['Tipo'];
 
         if (userType == 'Ganadero') {
-          Navigator.pushReplacementNamed(context, '/home', arguments: 'Ganadero');
+          Navigator.pushReplacementNamed(context, '/home',
+              arguments: 'Ganadero');
         } else if (userType == 'Veterinario') {
-          Navigator.pushReplacementNamed(context, '/home', arguments: 'Veterinario');
+          Navigator.pushReplacementNamed(context, '/home',
+              arguments: 'Veterinario');
         } else if (userType == 'Empleado') {
-          Navigator.pushReplacementNamed(context, '/home', arguments: 'Empleado');
+          Navigator.pushReplacementNamed(context, '/home',
+              arguments: 'Empleado');
         } else {
           _setValidationMessage("¡Tipo de usuario no reconocido!");
         }
@@ -57,9 +60,10 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          image: DecorationImage(
-            image: NetworkImage('https://cdn.pixabay.com/photo/2017/10/28/06/48/cow-2896329_960_720.jpg'),
-            fit: BoxFit.cover,
+          gradient: LinearGradient(
+            colors: [Colors.green[800]!, Colors.green[300]!],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
         ),
         padding: EdgeInsets.all(16.0),
@@ -67,78 +71,112 @@ class _LoginPageState extends State<LoginPage> {
           children: <Widget>[
             SizedBox(height: 120),
             Card(
-              color: Colors.green,
+              color: Colors.white.withOpacity(0.9),
               margin: EdgeInsets.all(10.0),
-              elevation: 6.0,
+              elevation: 8.0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
               child: Container(
-                margin: EdgeInsets.all(16.0),
-                child: Form(
-                  child: Center(
-                    child: Column(
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.all(15.0),
-                          child: _loadPictureLogin(),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          "Bienvenido a",
-                          style: TextStyle(fontSize: 25.0, color: Colors.white),
-                        ),
-                        Text(
-                          "BoviData",
-                          style: TextStyle(fontSize: 30.0, color: Colors.white),
-                        ),
-                        SizedBox(height: 15),
-                        TextField(
-                          controller: _userController,
-                          decoration: InputDecoration(
-                            labelText: "Usuario:",
-                            labelStyle: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        SizedBox(height: 16),
-                        TextField(
-                          controller: _passwordController,
-                          obscureText: true,
-                          decoration: InputDecoration(
-                            labelText: "Contraseña:",
-                            labelStyle: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (_userController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
-                              _validateUser();
-                            } else {
-                              _showAlertDialog('No se permiten campos vacíos');
-                            }
-                          },
-                          child: Text('Entrar'),
-                        ),
-                        SizedBox(height: 5),
-                        Text(
-                          _validationMessage,
-                          style: TextStyle(fontSize: 20.0, color: Colors.red),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/register');
-                          },
-                          child: Text(
-                            '¿No tienes una cuenta? Regístrate aquí',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ],
+                padding: EdgeInsets.all(16.0),
+                child: Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(15.0),
+                      child: _loadPictureLogin(),
                     ),
-                  ),
+                    SizedBox(height: 2),
+                    Text(
+                      "Bienvenido a",
+                      style: TextStyle(
+                        fontSize: 26.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green[800],
+                      ),
+                    ),
+                    Text(
+                      "BoviData",
+                      style: TextStyle(
+                        fontSize: 30.0,
+                        color: Colors.green[800],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    _buildTextField(_userController, "Usuario", Icons.person),
+                    SizedBox(height: 16),
+                    _buildTextField(
+                        _passwordController, "Contraseña", Icons.lock,
+                        isPassword: true),
+                    SizedBox(height: 16),
+                    _buildLoginButton(),
+                    SizedBox(height: 5),
+                    Text(
+                      _validationMessage,
+                      style: TextStyle(fontSize: 16.0, color: Colors.red),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/register');
+                      },
+                      child: Text(
+                        '¿No tienes una cuenta? Regístrate aquí',
+                        style: TextStyle(color: Colors.green[800]),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            )
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(
+      TextEditingController controller, String label, IconData icon,
+      {bool isPassword = false}) {
+    return TextField(
+      controller: controller,
+      obscureText: isPassword,
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: Colors.green[800]),
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.green[800]),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.green[800]!),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.green[600]!),
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoginButton() {
+    return ElevatedButton(
+      onPressed: () {
+        if (_userController.text.isNotEmpty &&
+            _passwordController.text.isNotEmpty) {
+          _validateUser();
+        } else {
+          _showAlertDialog('No se permiten campos vacíos');
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.green[800],
+        padding: EdgeInsets.symmetric(vertical: 20),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        elevation: 5,
+      ),
+      child: Text(
+        'Ingresar',
+        style: TextStyle(fontSize: 18, color: Colors.white),
       ),
     );
   }
