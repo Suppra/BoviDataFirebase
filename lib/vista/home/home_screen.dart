@@ -13,14 +13,7 @@ class HomePage extends StatelessWidget {
         title: Text('BoviData', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.green[800],
         elevation: 4,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout, color: Colors.white),
-            onPressed: () {
-              _logout(context);
-            },
-          ),
-        ],
+       centerTitle: true,
       ),
       body: Container(
         decoration: BoxDecoration(
