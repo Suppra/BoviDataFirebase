@@ -3,7 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AnimalProfileEditScreen extends StatefulWidget {
   @override
-  _AnimalProfileEditScreenState createState() => _AnimalProfileEditScreenState();
+  _AnimalProfileEditScreenState createState() =>
+      _AnimalProfileEditScreenState();
 }
 
 class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
@@ -16,7 +17,8 @@ class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final Map<String, dynamic> args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final Map<String, dynamic> args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     animalId = args['animalId'];
     _loadAnimalData();
   }
@@ -59,7 +61,13 @@ class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message, textAlign: TextAlign.center)),
+      SnackBar(
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+        ),
+        backgroundColor: Colors.green,
+      ),
     );
   }
 
@@ -67,14 +75,15 @@ class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Editar Perfil del Animal'),
-        backgroundColor: Colors.teal[800],
+        title: Text('Editar Perfil del Animal', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.green[800],
         elevation: 0,
+        centerTitle: true,
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.teal[50]!, Colors.white],
+            colors: [Colors.green[50]!, Colors.white],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -97,14 +106,17 @@ class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, {bool isNumeric = false}) {
+  Widget _buildTextField(
+      String label, TextEditingController controller,
+      {bool isNumeric = false}) {
     return TextField(
       controller: controller,
       keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
       decoration: InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: Colors.teal[50],
+        fillColor: Colors.green[50],
+        contentPadding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide.none,
@@ -123,7 +135,8 @@ class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
           lastDate: DateTime.now(),
         );
         if (pickedDate != null) {
-          String formattedDate = "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+          String formattedDate =
+              "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
           controller.text = formattedDate;
         }
       },
@@ -133,7 +146,9 @@ class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
           decoration: InputDecoration(
             labelText: label,
             filled: true,
-            fillColor: Colors.teal[50],
+            fillColor: Colors.green[50],
+            contentPadding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            suffixIcon: Icon(Icons.calendar_today, color: Colors.green[800]),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
               borderSide: BorderSide.none,
@@ -145,16 +160,18 @@ class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
   }
 
   Widget _buildUpdateButton() {
-    return ElevatedButton(
+    return ElevatedButton.icon(
       onPressed: _updateAnimalData,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.teal[800],
+        backgroundColor: Colors.green[800],
         padding: EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
         ),
+        elevation: 5,
       ),
-      child: Text(
+      icon: Icon(Icons.save, color: Colors.white),
+      label: Text(
         'Actualizar Datos',
         style: TextStyle(fontSize: 18, color: Colors.white),
       ),

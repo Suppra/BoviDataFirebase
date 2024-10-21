@@ -27,12 +27,18 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Animal registrado con éxito')),
+        SnackBar(
+          content: Text('Animal registrado con éxito'),
+          backgroundColor: Colors.green,
+        ),
       );
       Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al registrar el animal')),
+        SnackBar(
+          content: Text('Error al registrar el animal'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -41,31 +47,45 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Registrar Animal'),
-        backgroundColor: Colors.teal[800],
+        title: Text('Registrar Animal', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.green[800],
         elevation: 0,
+        centerTitle: true,
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.teal[50]!, Colors.white],
+            colors: [Colors.green[50]!, Colors.white],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
         ),
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: [
-            _buildTextField('Nombre del Animal', _nameController),
-            SizedBox(height: 15),
-            _buildTextField('Raza', _breedController),
-            SizedBox(height: 15),
-            _buildTextField('Peso (kg)', _weightController, isNumeric: true),
-            SizedBox(height: 15),
-            _buildDatePickerField('Fecha de Nacimiento', _dobController),
-            SizedBox(height: 30),
-            _buildRegisterButton(),
-          ],
+        padding: const EdgeInsets.all(20.0),
+        child: Center(
+          child: Card(
+            elevation: 5,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  _buildTextField('Nombre del Animal', _nameController),
+                  SizedBox(height: 15),
+                  _buildTextField('Raza', _breedController),
+                  SizedBox(height: 15),
+                  _buildTextField('Peso (kg)', _weightController,
+                      isNumeric: true),
+                  SizedBox(height: 15),
+                  _buildDatePickerField('Fecha de Nacimiento', _dobController),
+                  SizedBox(height: 30),
+                  _buildRegisterButton(),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -80,7 +100,8 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
       decoration: InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: Colors.teal[50],
+        fillColor: Colors.green[50],
+        contentPadding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide.none,
@@ -111,7 +132,9 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
           decoration: InputDecoration(
             labelText: label,
             filled: true,
-            fillColor: Colors.teal[50],
+            fillColor: Colors.green[50],
+            contentPadding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            suffixIcon: Icon(Icons.calendar_today, color: Colors.green[800]),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
               borderSide: BorderSide.none,
@@ -123,16 +146,18 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
   }
 
   Widget _buildRegisterButton() {
-    return ElevatedButton(
+    return ElevatedButton.icon(
       onPressed: _registerAnimal,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.teal[800],
-        padding: EdgeInsets.symmetric(vertical: 16),
+        backgroundColor: Colors.green[700],
+        padding: EdgeInsets.symmetric(vertical: 18),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(20),
         ),
+        elevation: 5,
       ),
-      child: Text(
+      icon: Icon(Icons.check, color: Colors.white),
+      label: Text(
         'Registrar Animal',
         style: TextStyle(fontSize: 18, color: Colors.white),
       ),

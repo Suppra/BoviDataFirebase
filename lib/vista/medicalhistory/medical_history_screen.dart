@@ -18,9 +18,9 @@ class MedicalHistoryScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Historial Médico de $animalName',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        backgroundColor: Colors.teal[800],
+        backgroundColor: Colors.green[800],
         elevation: 0,
       ),
       body: Container(
@@ -58,7 +58,7 @@ class MedicalHistoryScreen extends StatelessWidget {
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: Colors.teal[900],
+            color: Colors.green[900],
           ),
         ),
       ),
@@ -77,10 +77,14 @@ class MedicalHistoryScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
       ),
       child: ListTile(
-        leading: Icon(icon, color: Colors.teal[700], size: 30),
+        leading: Icon(icon, color: Colors.green[700], size: 30),
         title: Text(
           title,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.green[800],
+          ),
         ),
         subtitle: Text(
           subtitle,
@@ -98,7 +102,8 @@ class MedicalHistoryScreen extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator(color: Colors.teal));
+          return Center(
+              child: CircularProgressIndicator(color: Colors.green[800]));
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(child: Text('No hay vacunas registradas.'));
@@ -128,7 +133,8 @@ class MedicalHistoryScreen extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator(color: Colors.teal));
+          return Center(
+              child: CircularProgressIndicator(color: Colors.green[800]));
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(child: Text('No hay tratamientos registrados.'));
@@ -158,7 +164,8 @@ class MedicalHistoryScreen extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator(color: Colors.teal));
+          return Center(
+              child: CircularProgressIndicator(color: Colors.green[800]));
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(child: Text('No hay planificaciones de vacunación.'));
@@ -187,7 +194,8 @@ class MedicalHistoryScreen extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator(color: Colors.teal));
+          return Center(
+              child: CircularProgressIndicator(color: Colors.green[800]));
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(child: Text('No hay incidencias o reportes de mortalidad.'));

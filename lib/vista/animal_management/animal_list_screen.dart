@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class AnimalListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // Obtener los argumentos pasados a la pantalla
     final Map<String, dynamic>? args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
 
@@ -13,14 +12,18 @@ class AnimalListScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Listado de Animales', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.teal[800],
+        title: Text(
+          'Listado de Animales',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.green[800],
         elevation: 0,
+        centerTitle: true,
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.teal[50]!, Colors.white],
+            colors: [Colors.green[50]!, Colors.white],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -29,7 +32,9 @@ class AnimalListScreen extends StatelessWidget {
           stream: FirebaseFirestore.instance.collection('animales').snapshots(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
+              return Center(
+                child: CircularProgressIndicator(color: Colors.green[800]),
+              );
             }
 
             if (snapshot.hasError) {
@@ -51,10 +56,10 @@ class AnimalListScreen extends StatelessWidget {
                 final animalId = animal['AnimalID'] ?? 'ID no disponible';
 
                 return Card(
-                  elevation: 5,
+                  elevation: 8,
                   margin: EdgeInsets.symmetric(vertical: 8),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   child: ListTile(
                     title: Text(
@@ -62,15 +67,16 @@ class AnimalListScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.teal[800],
+                        color: Colors.green[800],
                       ),
                     ),
                     subtitle: Text(
                       'ID: $animalId',
-                      style: TextStyle(color: Colors.teal[600]),
+                      style: TextStyle(color: Colors.green[600]),
                     ),
-                    leading: Icon(Icons.pets, color: Colors.teal[400], size: 36),
-                    trailing: _buildActionButtons(context, animalId, animalName, isMedicalHistory),
+                    leading: Icon(Icons.pets, color: Colors.green[400], size: 36),
+                    trailing: _buildActionButtons(
+                        context, animalId, animalName, isMedicalHistory),
                   ),
                 );
               },
@@ -81,7 +87,8 @@ class AnimalListScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, String animalId, String animalName, bool isMedicalHistory) {
+  Widget _buildActionButtons(BuildContext context, String animalId,
+      String animalName, bool isMedicalHistory) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -97,7 +104,7 @@ class AnimalListScreen extends StatelessWidget {
         ),
         SizedBox(width: 8),
         IconButton(
-          icon: Icon(Icons.arrow_forward, color: Colors.teal[400], size: 28),
+          icon: Icon(Icons.archive_rounded, color: Colors.green[400], size: 28),
           onPressed: () {
             if (isMedicalHistory) {
               Navigator.pushNamed(

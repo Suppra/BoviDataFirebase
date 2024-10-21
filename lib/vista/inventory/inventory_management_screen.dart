@@ -3,19 +3,23 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class InventoryManagementScreen extends StatefulWidget {
   @override
-  _InventoryManagementScreenState createState() => _InventoryManagementScreenState();
+  _InventoryManagementScreenState createState() =>
+      _InventoryManagementScreenState();
 }
 
 class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
-  final TextEditingController _medicationNameController = TextEditingController();
+  final TextEditingController _medicationNameController =
+      TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
-  final TextEditingController _expirationDateController = TextEditingController();
+  final TextEditingController _expirationDateController =
+      TextEditingController();
   String? _selectedMedicationId;
 
   Future<void> _addOrUpdateMedication() async {
     try {
       if (_selectedMedicationId == null) {
-        DocumentReference newMedicationRef = FirebaseFirestore.instance.collection('medications').doc();
+        DocumentReference newMedicationRef =
+            FirebaseFirestore.instance.collection('medications').doc();
         await newMedicationRef.set({
           'name': _medicationNameController.text,
           'quantity': int.parse(_quantityController.text),
@@ -24,7 +28,10 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
         });
         _showAlertDialog('Medicamento agregado con éxito.');
       } else {
-        await FirebaseFirestore.instance.collection('medications').doc(_selectedMedicationId).update({
+        await FirebaseFirestore.instance
+            .collection('medications')
+            .doc(_selectedMedicationId)
+            .update({
           'name': _medicationNameController.text,
           'quantity': int.parse(_quantityController.text),
           'expirationDate': _expirationDateController.text,
@@ -38,7 +45,10 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
   }
 
   void _loadMedicationData(String medicationId) async {
-    DocumentSnapshot medicationDoc = await FirebaseFirestore.instance.collection('medications').doc(medicationId).get();
+    DocumentSnapshot medicationDoc = await FirebaseFirestore.instance
+        .collection('medications')
+        .doc(medicationId)
+        .get();
     if (medicationDoc.exists) {
       setState(() {
         _selectedMedicationId = medicationId;
@@ -63,13 +73,13 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Gestión de Inventario', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.teal[800],
+        backgroundColor: Colors.green[800],
         elevation: 0,
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.green[100]!, Colors.white],
+            colors: [Colors.green[50]!, Colors.white],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -77,15 +87,19 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Expanded(
-              child: _buildMedicationList(),
+            Expanded(child: _buildMedicationList()),
+            SizedBox(height: 10),
+            _buildTextField(
+                'Nombre del Medicamento', _medicationNameController),
+            SizedBox(height: 10),
+            _buildTextField(
+              'Cantidad',
+              _quantityController,
+              keyboardType: TextInputType.number,
             ),
             SizedBox(height: 10),
-            _buildTextField('Nombre del Medicamento', _medicationNameController),
-            SizedBox(height: 10),
-            _buildTextField('Cantidad', _quantityController, keyboardType: TextInputType.number),
-            SizedBox(height: 10),
-            _buildDateField(context, 'Fecha de Expiración', _expirationDateController),
+            _buildDateField(
+                context, 'Fecha de Expiración', _expirationDateController),
             SizedBox(height: 20),
             _buildActionButton(),
           ],
@@ -99,7 +113,8 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
       stream: FirebaseFirestore.instance.collection('medications').snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator(color: Colors.teal));
+          return Center(
+              child: CircularProgressIndicator(color: Colors.green[800]));
         }
         if (snapshot.hasError) {
           return Center(child: Text('Error al cargar los medicamentos.'));
@@ -119,17 +134,25 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
 
             return Card(
               margin: EdgeInsets.symmetric(vertical: 8),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
               elevation: 5,
               child: ListTile(
-                leading: Icon(Icons.medication, color: Colors.teal[700], size: 30),
+                leading: Icon(Icons.medication, color: Colors.green[700], size: 30),
                 title: Text(
                   medicationName,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green[800]),
                 ),
-                subtitle: Text('Cantidad: $medicationQuantity\nExpira: $expirationDate'),
+                subtitle: Text(
+                  'Cantidad: $medicationQuantity\nExpira: $expirationDate',
+                  style: TextStyle(color: Colors.green[600]),
+                ),
                 trailing: IconButton(
-                  icon: Icon(Icons.edit, color: Colors.teal),
+                  icon: Icon(Icons.edit, color: Colors.green[400]),
                   onPressed: () {
                     _loadMedicationData(medication.id);
                   },
@@ -142,15 +165,17 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, {TextInputType keyboardType = TextInputType.text}) {
+  Widget _buildTextField(String label, TextEditingController controller,
+      {TextInputType keyboardType = TextInputType.text}) {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: Colors.teal[50],
-        contentPadding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
+        fillColor: Colors.green[50],
+        contentPadding:
+            EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide.none,
@@ -159,20 +184,22 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
     );
   }
 
-  Widget _buildDateField(BuildContext context, String label, TextEditingController controller) {
+  Widget _buildDateField(
+      BuildContext context, String label, TextEditingController controller) {
     return TextField(
       controller: controller,
       readOnly: true,
       decoration: InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: Colors.teal[50],
-        contentPadding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
+        fillColor: Colors.green[50],
+        suffixIcon: Icon(Icons.calendar_today, color: Colors.green),
+        contentPadding:
+            EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide.none,
         ),
-        suffixIcon: Icon(Icons.calendar_today, color: Colors.teal),
       ),
       onTap: () async {
         DateTime? selectedDate = await showDatePicker(
@@ -182,7 +209,8 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
           lastDate: DateTime(2100),
         );
         if (selectedDate != null) {
-          controller.text = '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}';
+          controller.text =
+              '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}';
         }
       },
     );
@@ -193,11 +221,13 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
       onPressed: _addOrUpdateMedication,
       style: ElevatedButton.styleFrom(
         padding: EdgeInsets.symmetric(vertical: 18),
-        backgroundColor: Colors.teal[800],
+        backgroundColor: Colors.green[800],
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       ),
       child: Text(
-        _selectedMedicationId == null ? 'Agregar Medicamento' : 'Actualizar Medicamento',
+        _selectedMedicationId == null
+            ? 'Agregar Medicamento'
+            : 'Actualizar Medicamento',
         style: TextStyle(fontSize: 18, color: Colors.white),
       ),
     );
@@ -207,13 +237,14 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         title: Text('Información'),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('OK', style: TextStyle(color: Colors.teal[800])),
+            child: Text('OK', style: TextStyle(color: Colors.green[800])),
           ),
         ],
       ),

@@ -3,94 +3,53 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class IncidentMortalityReportScreen extends StatefulWidget {
   @override
-  _IncidentMortalityReportScreenState createState() => _IncidentMortalityReportScreenState();
+  _IncidentMortalityReportScreenState createState() =>
+      _IncidentMortalityReportScreenState();
 }
 
-class _IncidentMortalityReportScreenState extends State<IncidentMortalityReportScreen> {
+class _IncidentMortalityReportScreenState
+    extends State<IncidentMortalityReportScreen> {
   String? _selectedAnimalId;
-  final TextEditingController _incidentDescriptionController = TextEditingController();
-  final TextEditingController _mortalityReasonController = TextEditingController();
+  final TextEditingController _incidentDescriptionController =
+      TextEditingController();
+  final TextEditingController _mortalityReasonController =
+      TextEditingController();
   final TextEditingController _dateController = TextEditingController();
-
-  Future<void> _reportIncident() async {
-    if (_selectedAnimalId == null || _incidentDescriptionController.text.isEmpty || _dateController.text.isEmpty) {
-      _showAlertDialog('Por favor, complete todos los campos.');
-      return;
-    }
-
-    try {
-      await FirebaseFirestore.instance.collection('incidents').add({
-        'animalId': _selectedAnimalId,
-        'description': _incidentDescriptionController.text,
-        'date': _dateController.text,
-      });
-
-      _showAlertDialog('Incidencia reportada con éxito.');
-      _clearFields();
-    } catch (e) {
-      _showAlertDialog('Error al reportar la incidencia.');
-    }
-  }
-
-  Future<void> _reportMortality() async {
-    if (_selectedAnimalId == null || _mortalityReasonController.text.isEmpty || _dateController.text.isEmpty) {
-      _showAlertDialog('Por favor, complete todos los campos.');
-      return;
-    }
-
-    try {
-      await FirebaseFirestore.instance.collection('mortality').add({
-        'animalId': _selectedAnimalId,
-        'reason': _mortalityReasonController.text,
-        'date': _dateController.text,
-      });
-
-      _showAlertDialog('Mortalidad reportada con éxito.');
-      _clearFields();
-    } catch (e) {
-      _showAlertDialog('Error al reportar la mortalidad.');
-    }
-  }
-
-  void _clearFields() {
-    setState(() {
-      _selectedAnimalId = null;
-      _incidentDescriptionController.clear();
-      _mortalityReasonController.clear();
-      _dateController.clear();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Reportes de Incidencias y Mortalidad', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.teal[800],
-        elevation: 0,
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.green[100]!, Colors.white],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Reportar Incidencias o Mortalidad',
+              style: TextStyle(color: Colors.white)),
+          backgroundColor: Colors.green[800],
+          elevation: 0,
+          bottom: TabBar(
+            indicatorColor: Colors.white,
+            tabs: [
+              Tab(
+                icon: Icon(Icons.report, color: Colors.red),
+                child: Text(
+                  'Incidencia',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+              Tab(
+                icon: Icon(Icons.warning, color: Colors.red),
+                child: Text(
+                  'Mortalidad',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
           ),
         ),
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
+        body: TabBarView(
           children: [
-            _buildAnimalDropdown(),
-            SizedBox(height: 10),
-            _buildTextField('Descripción de la Incidencia', _incidentDescriptionController),
-            SizedBox(height: 10),
-            _buildTextField('Razón de Mortalidad', _mortalityReasonController),
-            SizedBox(height: 10),
-            _buildDateField(context, 'Fecha', _dateController),
-            SizedBox(height: 20),
-            _buildActionButton('Reportar Incidencia', _reportIncident),
-            SizedBox(height: 10),
-            _buildActionButton('Reportar Mortalidad', _reportMortality),
+            _buildIncidentForm(),
+            _buildMortalityForm(),
           ],
         ),
       ),
@@ -102,7 +61,7 @@ class _IncidentMortalityReportScreenState extends State<IncidentMortalityReportS
       stream: FirebaseFirestore.instance.collection('animales').snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator(color: Colors.teal));
+          return Center(child: CircularProgressIndicator(color: Colors.green));
         }
 
         if (snapshot.hasError) {
@@ -131,7 +90,7 @@ class _IncidentMortalityReportScreenState extends State<IncidentMortalityReportS
           decoration: InputDecoration(
             labelText: 'Animal',
             filled: true,
-            fillColor: Colors.teal[50],
+            fillColor: Colors.green[50],
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
               borderSide: BorderSide.none,
@@ -142,13 +101,48 @@ class _IncidentMortalityReportScreenState extends State<IncidentMortalityReportS
     );
   }
 
+  Widget _buildIncidentForm() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: ListView(
+        children: [
+          _buildAnimalDropdown(),
+          SizedBox(height: 10),
+          _buildTextField('Descripción de la Incidencia',
+              _incidentDescriptionController),
+          SizedBox(height: 10),
+          _buildDateField(context, 'Fecha', _dateController),
+          SizedBox(height: 20),
+          _buildActionButton('Reportar Incidencia', _reportIncident),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMortalityForm() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: ListView(
+        children: [
+          _buildAnimalDropdown(),
+          SizedBox(height: 10),
+          _buildTextField('Razón de Mortalidad', _mortalityReasonController),
+          SizedBox(height: 10),
+          _buildDateField(context, 'Fecha', _dateController),
+          SizedBox(height: 20),
+          _buildActionButton('Reportar Mortalidad', _reportMortality),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTextField(String label, TextEditingController controller) {
     return TextField(
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: Colors.teal[50],
+        fillColor: Colors.green[50],
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide.none,
@@ -157,15 +151,16 @@ class _IncidentMortalityReportScreenState extends State<IncidentMortalityReportS
     );
   }
 
-  Widget _buildDateField(BuildContext context, String label, TextEditingController controller) {
+  Widget _buildDateField(
+      BuildContext context, String label, TextEditingController controller) {
     return TextField(
       controller: controller,
       readOnly: true,
       decoration: InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: Colors.teal[50],
-        suffixIcon: Icon(Icons.calendar_today, color: Colors.teal),
+        fillColor: Colors.green[50],
+        suffixIcon: Icon(Icons.calendar_today, color: Colors.green),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide.none,
@@ -179,7 +174,8 @@ class _IncidentMortalityReportScreenState extends State<IncidentMortalityReportS
           lastDate: DateTime(2100),
         );
         if (selectedDate != null) {
-          controller.text = '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}';
+          controller.text =
+              '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}';
         }
       },
     );
@@ -189,7 +185,7 @@ class _IncidentMortalityReportScreenState extends State<IncidentMortalityReportS
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.teal[800],
+        backgroundColor: Colors.green[800],
         padding: EdgeInsets.symmetric(vertical: 18),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       ),
@@ -198,6 +194,59 @@ class _IncidentMortalityReportScreenState extends State<IncidentMortalityReportS
         style: TextStyle(fontSize: 18, color: Colors.white),
       ),
     );
+  }
+
+  Future<void> _reportIncident() async {
+    if (_selectedAnimalId == null ||
+        _incidentDescriptionController.text.isEmpty ||
+        _dateController.text.isEmpty) {
+      _showAlertDialog('Por favor, complete todos los campos.');
+      return;
+    }
+
+    try {
+      await FirebaseFirestore.instance.collection('incidents').add({
+        'animalId': _selectedAnimalId,
+        'description': _incidentDescriptionController.text,
+        'date': _dateController.text,
+      });
+
+      _showAlertDialog('Incidencia reportada con éxito.');
+      _clearFields();
+    } catch (e) {
+      _showAlertDialog('Error al reportar la incidencia.');
+    }
+  }
+
+  Future<void> _reportMortality() async {
+    if (_selectedAnimalId == null ||
+        _mortalityReasonController.text.isEmpty ||
+        _dateController.text.isEmpty) {
+      _showAlertDialog('Por favor, complete todos los campos.');
+      return;
+    }
+
+    try {
+      await FirebaseFirestore.instance.collection('mortality').add({
+        'animalId': _selectedAnimalId,
+        'reason': _mortalityReasonController.text,
+        'date': _dateController.text,
+      });
+
+      _showAlertDialog('Mortalidad reportada con éxito.');
+      _clearFields();
+    } catch (e) {
+      _showAlertDialog('Error al reportar la mortalidad.');
+    }
+  }
+
+  void _clearFields() {
+    setState(() {
+      _selectedAnimalId = null;
+      _incidentDescriptionController.clear();
+      _mortalityReasonController.clear();
+      _dateController.clear();
+    });
   }
 
   Future<void> _showAlertDialog(String message) {
@@ -210,7 +259,7 @@ class _IncidentMortalityReportScreenState extends State<IncidentMortalityReportS
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('OK', style: TextStyle(color: Colors.teal[800])),
+            child: Text('OK', style: TextStyle(color: Colors.green[800])),
           ),
         ],
       ),
