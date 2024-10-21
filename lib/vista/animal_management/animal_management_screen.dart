@@ -55,7 +55,7 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.green[50]!, Colors.white],
+            colors: [Colors.green[400]!, Colors.white],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
