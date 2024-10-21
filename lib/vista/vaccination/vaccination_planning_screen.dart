@@ -9,10 +9,12 @@ class VaccinationPlanningScreen extends StatefulWidget {
 class _VaccinationPlanningScreenState extends State<VaccinationPlanningScreen> {
   String? _selectedAnimalId;
   final TextEditingController _vaccineNameController = TextEditingController();
-  final TextEditingController _dateController = TextEditingController();
+  DateTime? _selectedDate;
 
   Future<void> _planVaccination() async {
-    if (_selectedAnimalId == null || _vaccineNameController.text.isEmpty || _dateController.text.isEmpty) {
+    if (_selectedAnimalId == null || 
+        _vaccineNameController.text.isEmpty || 
+        _selectedDate == null) {
       _showAlertDialog('Por favor, complete todos los campos.');
       return;
     }
@@ -21,7 +23,7 @@ class _VaccinationPlanningScreenState extends State<VaccinationPlanningScreen> {
       await FirebaseFirestore.instance.collection('vaccination_plans').add({
         'animalId': _selectedAnimalId,
         'vaccineName': _vaccineNameController.text,
-        'date': _dateController.text,
+        'date': _selectedDate!.toIso8601String(),
       });
 
       _showAlertDialog('Vacunación planificada con éxito.');
@@ -30,77 +32,177 @@ class _VaccinationPlanningScreenState extends State<VaccinationPlanningScreen> {
     }
   }
 
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Colors.green[700]!,
+              onPrimary: Colors.white,
+              surface: Colors.green[100]!,
+            ),
+            dialogBackgroundColor: Colors.white,
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Planificación de Vacunación'),
-        backgroundColor: Colors.teal,
+        title: Text('Planificación de Vacunación', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.green[800],
+        elevation: 0,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: [
-            StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('animales').snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
+        padding: const EdgeInsets.all(20.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTitle(),
+              SizedBox(height: 20),
+              _buildAnimalDropdown(),
+              SizedBox(height: 20),
+              _buildTextField(_vaccineNameController, 'Nombre de la Vacuna', Icons.vaccines),
+              SizedBox(height: 20),
+              _buildDateSelector(context),
+              SizedBox(height: 30),
+              _buildPlanButton(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error al cargar los animales.'));
-                }
+  Widget _buildTitle() {
+    return Text(
+      'Planificar Vacunación',
+      style: TextStyle(
+        fontSize: 28,
+        fontWeight: FontWeight.bold,
+        color: Colors.green[800],
+      ),
+    );
+  }
 
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return Center(child: Text('No hay animales registrados.'));
-                }
+  Widget _buildAnimalDropdown() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('animales').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
 
-                final animals = snapshot.data!.docs;
+        if (snapshot.hasError) {
+          return Center(child: Text('Error al cargar los animales.'));
+        }
 
-                return DropdownButtonFormField<String>(
-                  value: _selectedAnimalId,
-                  hint: Text('Seleccione un Animal'),
-                  items: animals.map((animal) {
-                    return DropdownMenuItem<String>(
-                      value: animal.id,
-                      child: Text(animal['Nombre']),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedAnimalId = value;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Animal',
-                  ),
-                );
-              },
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(child: Text('No hay animales registrados.'));
+        }
+
+        final animals = snapshot.data!.docs;
+
+        return DropdownButtonFormField<String>(
+          value: _selectedAnimalId,
+          hint: Text('Seleccione un Animal'),
+          items: animals.map((animal) {
+            return DropdownMenuItem<String>(
+              value: animal.id,
+              child: Text(animal['Nombre']),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              _selectedAnimalId = value;
+            });
+          },
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.green[50],
+            labelText: 'Animal',
+            prefixIcon: Icon(Icons.pets, color: Colors.green[800]),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15),
+              borderSide: BorderSide.none,
             ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _vaccineNameController,
-              decoration: InputDecoration(labelText: 'Nombre de la Vacuna'),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, IconData icon) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.green[50],
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.green[800]),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateSelector(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _selectDate(context),
+      child: AbsorbPointer(
+        child: TextField(
+          decoration: InputDecoration(
+            labelText: _selectedDate == null
+                ? 'Seleccionar Fecha'
+                : 'Fecha: ${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+            prefixIcon: Icon(Icons.calendar_today, color: Colors.green[800]),
+            filled: true,
+            fillColor: Colors.green[50],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15),
+              borderSide: BorderSide.none,
             ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _dateController,
-              decoration: InputDecoration(labelText: 'Fecha (DD/MM/AAAA)'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _planVaccination,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                padding: EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: Text('Planificar Vacunación'),
-            ),
-          ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlanButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _planVaccination,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.green[700],
+          padding: EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          elevation: 5,
+        ),
+        child: Text(
+          'Planificar Vacunación',
+          style: TextStyle(fontSize: 18, color: Colors.white),
         ),
       ),
     );
@@ -110,14 +212,18 @@ class _VaccinationPlanningScreenState extends State<VaccinationPlanningScreen> {
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Información'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Text('Información', style: TextStyle(color: Colors.green[800])),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context);
             },
-            child: Text('OK'),
+            child: Text(
+              'OK',
+              style: TextStyle(color: Colors.green[800]),
+            ),
           ),
         ],
       ),

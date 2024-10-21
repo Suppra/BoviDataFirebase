@@ -14,35 +14,81 @@ class MedicalHistoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Historial Médico de $animalName'),
-        backgroundColor: Colors.teal,
+        title: Text(
+          'Historial Médico de $animalName',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.teal[800],
+        elevation: 0,
       ),
-      body: ListView(
-        children: [
-          _buildSectionTitle('Vacunas'),
-          _buildVaccinesSection(),
-          _buildSectionTitle('Tratamientos'),
-          _buildTreatmentsSection(),
-          _buildSectionTitle('Planificación de Vacunación'),
-          _buildVaccinationPlansSection(),
-          _buildSectionTitle('Incidencias y Mortalidad'),
-          _buildIncidentsSection(),
-        ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.green[100]!, Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: ListView(
+          physics: BouncingScrollPhysics(),
+          padding: const EdgeInsets.all(16.0),
+          children: [
+            _buildSectionTitle('Vacunas'),
+            _buildVaccinesSection(),
+            _buildSectionTitle('Tratamientos'),
+            _buildTreatmentsSection(),
+            _buildSectionTitle('Planificación de Vacunación'),
+            _buildVaccinationPlansSection(),
+            _buildSectionTitle('Incidencias y Mortalidad'),
+            _buildIncidentsSection(),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-      child: Text(
-        title,
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      child: Center(
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.teal[900],
+          ),
+        ),
       ),
     );
   }
 
+  Widget _buildListItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      elevation: 5,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: ListTile(
+        leading: Icon(icon, color: Colors.teal[700], size: 30),
+        title: Text(
+          title,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+        ),
+      ),
+    );
+  }
 
   Widget _buildVaccinesSection() {
     return StreamBuilder<QuerySnapshot>(
@@ -52,24 +98,21 @@ class MedicalHistoryScreen extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator(color: Colors.teal));
         }
-
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(child: Text('No hay vacunas registradas.'));
         }
-
         final vaccines = snapshot.data!.docs;
-
         return Column(
           children: vaccines.map((vaccine) {
             final vaccineName = vaccine['vaccineName'];
             final date = vaccine['date'];
             final dose = vaccine['dose'];
-            return ListTile(
-              title: Text(vaccineName),
-              subtitle: Text('Dosis: $dose\nFecha: $date'),
-              leading: Icon(Icons.vaccines, color: Colors.teal),
+            return _buildListItem(
+              icon: Icons.vaccines,
+              title: vaccineName,
+              subtitle: 'Dosis: $dose\nFecha: $date',
             );
           }).toList(),
         );
@@ -85,24 +128,21 @@ class MedicalHistoryScreen extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator(color: Colors.teal));
         }
-
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(child: Text('No hay tratamientos registrados.'));
         }
-
         final treatments = snapshot.data!.docs;
-
         return Column(
           children: treatments.map((treatment) {
             final treatmentName = treatment['treatmentName'];
             final date = treatment['date'];
             final details = treatment['details'];
-            return ListTile(
-              title: Text(treatmentName),
-              subtitle: Text('Fecha: $date\nDetalles: $details'),
-              leading: Icon(Icons.healing, color: Colors.teal),
+            return _buildListItem(
+              icon: Icons.healing,
+              title: treatmentName,
+              subtitle: 'Fecha: $date\nDetalles: $details',
             );
           }).toList(),
         );
@@ -118,23 +158,20 @@ class MedicalHistoryScreen extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator(color: Colors.teal));
         }
-
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(child: Text('No hay planificaciones de vacunación.'));
         }
-
         final plans = snapshot.data!.docs;
-
         return Column(
           children: plans.map((plan) {
             final vaccineName = plan['vaccineName'];
             final date = plan['date'];
-            return ListTile(
-              title: Text(vaccineName),
-              subtitle: Text('Fecha programada: $date'),
-              leading: Icon(Icons.event_note, color: Colors.teal),
+            return _buildListItem(
+              icon: Icons.event_note,
+              title: vaccineName,
+              subtitle: 'Fecha programada: $date',
             );
           }).toList(),
         );
@@ -150,23 +187,20 @@ class MedicalHistoryScreen extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator(color: Colors.teal));
         }
-
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(child: Text('No hay incidencias o reportes de mortalidad.'));
         }
-
         final incidents = snapshot.data!.docs;
-
         return Column(
           children: incidents.map((incident) {
             final description = incident['description'] ?? 'Sin descripción';
             final date = incident['date'];
-            return ListTile(
-              title: Text('Incidencia / Mortalidad'),
-              subtitle: Text('Fecha: $date\nDescripción: $description'),
-              leading: Icon(Icons.report, color: Colors.teal),
+            return _buildListItem(
+              icon: Icons.report,
+              title: 'Incidencia / Mortalidad',
+              subtitle: 'Fecha: $date\nDescripción: $description',
             );
           }).toList(),
         );

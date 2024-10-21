@@ -8,12 +8,14 @@ class HomePage extends StatelessWidget {
         ModalRoute.of(context)!.settings.arguments as String;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('BoviData - Inicio'),
-        backgroundColor: Colors.teal,
+        title: Text('BoviData', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.green[800],
+        elevation: 4,
         actions: [
           IconButton(
-            icon: Icon(Icons.logout),
+            icon: Icon(Icons.logout, color: Colors.white),
             onPressed: () {
               _logout(context);
             },
@@ -21,142 +23,177 @@ class HomePage extends StatelessWidget {
         ],
       ),
       body: Container(
-        padding: EdgeInsets.all(16.0),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.teal[300]!, Colors.teal[100]!],
+            colors: [Colors.green[50]!, Colors.white],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Bienvenido a BoviData',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
-            ),
-            SizedBox(height: 30),
-            _buildButton(context, Icons.pets, 'Gestión de Animales',
-                '/animal_management'),
-            _buildButton(
-                context, Icons.list, 'Listado de Animales', '/animal_list'),
-            if (userType == 'Veterinario') ...[
-              _buildButton(
-                  context,
-                  Icons.medical_services,
-                  'Gestión de Tratamientos y Vacunas',
-                  '/treatment_vaccine_management'),
-              _buildButton(
-                  context,
-                  Icons.inventory,
-                  'Gestión de Inventario de Medicamentos',
-                  '/inventory_management'),
-              _buildButton(context, Icons.calendar_today,
-                  'Planificación de Vacunación', '/vaccination_planning'),
-              _buildButton(
-                  context,
-                  Icons.report,
-                  'Reportar Incidencias y Mortalidad',
-                  '/incident_mortality_report'),
-              _buildMedicalHistoryButton(context),
-            ],
-            if (userType == 'Ganadero') ...[
-              _buildButton(context, Icons.feedback, 'Quejas y Sugerencias',
-                  '/complaints_suggestions'),
-              _buildButton(context, Icons.file_download, 'Exportación de Datos',
-                  '/data_export'),
-              _buildMedicalHistoryButton(context),
-            ],
-            if (userType == 'Empleado') ...[
-              _buildButton(context, Icons.report_problem,
-                  'Reportar Incidencias', '/incident_mortality_report'),
-              _buildButton(context, Icons.feedback, 'Quejas y Sugerencias',
-                  '/complaints_suggestions'),
-            ],
             SizedBox(height: 20),
-            _buildLogoutButton(context),
+            _buildHeader(),
+            Expanded(
+              child: _buildOptionsGrid(context, userType),
+            ),
+            SizedBox(height: 20),
+            _buildAnimatedLogoutButton(context),
+            SizedBox(height: 20),
+            _buildLogo(),
+            SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  // Método para construir botones de manera uniforme
-  Widget _buildButton(
-      BuildContext context, IconData icon, String label, String route) {
+  Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: ElevatedButton.icon(
-        onPressed: () {
-          Navigator.pushNamed(context, route);
-        },
-        icon: Icon(icon, color: Colors.white),
-        label: Text(label),
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.symmetric(vertical: 15),
-          backgroundColor: Colors.teal[800],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+      padding: const EdgeInsets.symmetric(vertical: 20.0),
+      child: Text(
+        'Bienvenido a BoviData',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 30,
+          fontWeight: FontWeight.bold,
+          color: Colors.green[800],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionsGrid(BuildContext context, String userType) {
+    final List<Map<String, dynamic>> options = [
+      {'label': 'Gestión de Animales', 'icon': Icons.pets, 'route': '/animal_management'},
+      {'label': 'Listado de Animales', 'icon': Icons.list, 'route': '/animal_list'},
+      if (userType == 'Veterinario') ...[
+        {'label': 'Tratamientos y Vacunas', 'icon': Icons.medical_services, 'route': '/treatment_vaccine_management'},
+        {'label': 'Inventario de Medicamentos', 'icon': Icons.inventory, 'route': '/inventory_management'},
+        {'label': 'Planificación Vacunación', 'icon': Icons.calendar_today, 'route': '/vaccination_planning'},
+        {'label': 'Reportar Incidencias', 'icon': Icons.report, 'route': '/incident_mortality_report'},
+        {'label': 'Historial Médico', 'icon': Icons.history, 'route': '/animal_list', 'args': {'isMedicalHistory': true}},
+      ],
+      if (userType == 'Ganadero') ...[
+        {'label': 'Quejas y Sugerencias', 'icon': Icons.feedback, 'route': '/complaints_suggestions'},
+        {'label': 'Exportación de Datos', 'icon': Icons.file_download, 'route': '/data_export'},
+        {'label': 'Historial Médico', 'icon': Icons.history, 'route': '/animal_list', 'args': {'isMedicalHistory': true}},
+      ],
+      if (userType == 'Empleado') ...[
+        {'label': 'Reportar Incidencias', 'icon': Icons.report_problem, 'route': '/incident_mortality_report'},
+        {'label': 'Quejas y Sugerencias', 'icon': Icons.feedback, 'route': '/complaints_suggestions'},
+      ],
+    ];
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(16.0),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 1.2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+      ),
+      itemCount: options.length,
+      itemBuilder: (context, index) {
+        final option = options[index];
+        return _buildOptionCard(
+          context,
+          option['icon'],
+          option['label'],
+          option['route'],
+          args: option['args'],
+        );
+      },
+    );
+  }
+
+  Widget _buildOptionCard(BuildContext context, IconData icon, String label, String route, {Map<String, dynamic>? args}) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(context, route, arguments: args);
+      },
+      child: Card(
+        elevation: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        child: Container(
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            gradient: LinearGradient(
+              colors: [Colors.green[100]!, Colors.white],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 48, color: Colors.green[800]),
+              SizedBox(height: 10),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green[800],
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  // Botón para el historial médico
-  Widget _buildMedicalHistoryButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: ElevatedButton.icon(
-        onPressed: () {
-          // Navegar a la lista de animales para seleccionar uno y ver su historial médico
-          Navigator.pushNamed(
-            context,
-            '/animal_list',
-            arguments: <String, dynamic>{'isMedicalHistory': true},
-          );
-        },
-        icon: Icon(Icons.history, color: Colors.white),
-        label: Text('Historial Médico'),
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.symmetric(vertical: 15),
-          backgroundColor: Colors.teal[800],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+  Widget _buildAnimatedLogoutButton(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        _logout(context);
+      },
+      child: Container(
+        width: 200,
+        height: 50,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(25),
+          gradient: LinearGradient(
+            colors: [Colors.red[400]!, Colors.red[800]!],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.red.withOpacity(0.5),
+              spreadRadius: 2,
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(
+            'Cerrar Sesión',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),
     );
   }
 
-  // Botón para cerrar sesión
-  Widget _buildLogoutButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: ElevatedButton.icon(
-        onPressed: () {
-          _logout(context);
-        },
-        icon: Icon(Icons.logout, color: Colors.white),
-        label: Text('Cerrar Sesión'),
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.symmetric(vertical: 15),
-          backgroundColor: Colors.red[800],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
+  Widget _buildLogo() {
+    return Center(
+      child: Image.asset(
+        'assets/images/logoBovidata.jpg',
+        height: 120,
+        width: 120,
       ),
     );
   }
 
-  // Método para manejar el cierre de sesión
   void _logout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
     Navigator.pushReplacementNamed(context, '/');

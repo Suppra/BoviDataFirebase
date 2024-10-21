@@ -16,7 +16,6 @@ class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Obtener el ID del animal desde los argumentos
     final Map<String, dynamic> args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     animalId = args['animalId'];
     _loadAnimalData();
@@ -38,33 +37,30 @@ class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al cargar los datos del animal')),
-      );
+      _showSnackBar('Error al cargar los datos del animal');
     }
   }
 
   Future<void> _updateAnimalData() async {
     try {
-      await FirebaseFirestore.instance
-          .collection('animales')
-          .doc(animalId)
-          .update({
+      await FirebaseFirestore.instance.collection('animales').doc(animalId).update({
         'Nombre': _nameController.text,
         'Raza': _breedController.text,
         'Peso': double.parse(_weightController.text),
         'FechaNacimiento': _dobController.text,
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Datos del animal actualizados con éxito')),
-      );
-      Navigator.pop(context); // Cierra la pantalla después de la actualización
+      _showSnackBar('Datos del animal actualizados con éxito');
+      Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al actualizar los datos')),
-      );
+      _showSnackBar('Error al actualizar los datos');
     }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message, textAlign: TextAlign.center)),
+    );
   }
 
   @override
@@ -72,46 +68,95 @@ class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Editar Perfil del Animal'),
-        backgroundColor: Colors.teal,
+        backgroundColor: Colors.teal[800],
+        elevation: 0,
       ),
-      body: Padding(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.teal[50]!, Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(labelText: 'Nombre del Animal'),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _breedController,
-              decoration: InputDecoration(labelText: 'Raza'),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _weightController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: 'Peso (kg)'),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _dobController,
-              decoration: InputDecoration(labelText: 'Fecha de Nacimiento (DD/MM/AAAA)'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _updateAnimalData,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                padding: EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: Text('Actualizar Datos'),
-            ),
+            _buildTextField('Nombre del Animal', _nameController),
+            SizedBox(height: 15),
+            _buildTextField('Raza', _breedController),
+            SizedBox(height: 15),
+            _buildTextField('Peso (kg)', _weightController, isNumeric: true),
+            SizedBox(height: 15),
+            _buildDatePickerField('Fecha de Nacimiento', _dobController),
+            SizedBox(height: 30),
+            _buildUpdateButton(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller, {bool isNumeric = false}) {
+    return TextField(
+      controller: controller,
+      keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.teal[50],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDatePickerField(String label, TextEditingController controller) {
+    return GestureDetector(
+      onTap: () async {
+        DateTime? pickedDate = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(1900),
+          lastDate: DateTime.now(),
+        );
+        if (pickedDate != null) {
+          String formattedDate = "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+          controller.text = formattedDate;
+        }
+      },
+      child: AbsorbPointer(
+        child: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            labelText: label,
+            filled: true,
+            fillColor: Colors.teal[50],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUpdateButton() {
+    return ElevatedButton(
+      onPressed: _updateAnimalData,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.teal[800],
+        padding: EdgeInsets.symmetric(vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+      ),
+      child: Text(
+        'Actualizar Datos',
+        style: TextStyle(fontSize: 18, color: Colors.white),
       ),
     );
   }

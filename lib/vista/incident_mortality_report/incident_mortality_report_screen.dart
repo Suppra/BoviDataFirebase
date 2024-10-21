@@ -65,91 +65,137 @@ class _IncidentMortalityReportScreenState extends State<IncidentMortalityReportS
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Reportes de Incidencias y Mortalidad'),
-        backgroundColor: Colors.teal,
+        title: Text('Reportes de Incidencias y Mortalidad', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.teal[800],
+        elevation: 0,
       ),
-      body: Padding(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.green[100]!, Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('animales').snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
-
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error al cargar los animales.'));
-                }
-
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return Center(child: Text('No hay animales registrados.'));
-                }
-
-                final animals = snapshot.data!.docs;
-
-                return DropdownButtonFormField<String>(
-                  value: _selectedAnimalId,
-                  hint: Text('Seleccione un Animal'),
-                  items: animals.map((animal) {
-                    return DropdownMenuItem<String>(
-                      value: animal.id,
-                      child: Text(animal['Nombre']),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedAnimalId = value;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Animal',
-                  ),
-                );
-              },
-            ),
+            _buildAnimalDropdown(),
             SizedBox(height: 10),
-            TextField(
-              controller: _incidentDescriptionController,
-              decoration: InputDecoration(labelText: 'Descripción de la Incidencia'),
-            ),
+            _buildTextField('Descripción de la Incidencia', _incidentDescriptionController),
             SizedBox(height: 10),
-            TextField(
-              controller: _mortalityReasonController,
-              decoration: InputDecoration(labelText: 'Razón de Mortalidad'),
-            ),
+            _buildTextField('Razón de Mortalidad', _mortalityReasonController),
             SizedBox(height: 10),
-            TextField(
-              controller: _dateController,
-              decoration: InputDecoration(labelText: 'Fecha (DD/MM/AAAA)'),
-            ),
+            _buildDateField(context, 'Fecha', _dateController),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _reportIncident,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                padding: EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: Text('Reportar Incidencia'),
-            ),
+            _buildActionButton('Reportar Incidencia', _reportIncident),
             SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _reportMortality,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                padding: EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: Text('Reportar Mortalidad'),
-            ),
+            _buildActionButton('Reportar Mortalidad', _reportMortality),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildAnimalDropdown() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('animales').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator(color: Colors.teal));
+        }
+
+        if (snapshot.hasError) {
+          return Center(child: Text('Error al cargar los animales.'));
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(child: Text('No hay animales registrados.'));
+        }
+
+        final animals = snapshot.data!.docs;
+        return DropdownButtonFormField<String>(
+          value: _selectedAnimalId,
+          hint: Text('Seleccione un Animal'),
+          items: animals.map((animal) {
+            return DropdownMenuItem<String>(
+              value: animal.id,
+              child: Text(animal['Nombre']),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              _selectedAnimalId = value;
+            });
+          },
+          decoration: InputDecoration(
+            labelText: 'Animal',
+            filled: true,
+            fillColor: Colors.teal[50],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.teal[50],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateField(BuildContext context, String label, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      readOnly: true,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.teal[50],
+        suffixIcon: Icon(Icons.calendar_today, color: Colors.teal),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      onTap: () async {
+        DateTime? selectedDate = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+        );
+        if (selectedDate != null) {
+          controller.text = '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}';
+        }
+      },
+    );
+  }
+
+  Widget _buildActionButton(String label, VoidCallback onPressed) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.teal[800],
+        padding: EdgeInsets.symmetric(vertical: 18),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(fontSize: 18, color: Colors.white),
       ),
     );
   }
@@ -158,14 +204,13 @@ class _IncidentMortalityReportScreenState extends State<IncidentMortalityReportS
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         title: Text('Información'),
         content: Text(message),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text('OK'),
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK', style: TextStyle(color: Colors.teal[800])),
           ),
         ],
       ),

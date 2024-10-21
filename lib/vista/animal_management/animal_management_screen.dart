@@ -3,7 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AnimalRegistrationScreen extends StatefulWidget {
   @override
-  _AnimalRegistrationScreenState createState() => _AnimalRegistrationScreenState();
+  _AnimalRegistrationScreenState createState() =>
+      _AnimalRegistrationScreenState();
 }
 
 class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
@@ -14,22 +15,21 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
 
   Future<void> _registerAnimal() async {
     try {
-      // Crear un nuevo documento con un ID único en Firestore
-      DocumentReference newAnimalRef = FirebaseFirestore.instance.collection('animales').doc();
+      DocumentReference newAnimalRef =
+          FirebaseFirestore.instance.collection('animales').doc();
 
-      // Crear el animal con la información proporcionada
       await newAnimalRef.set({
         'Nombre': _nameController.text,
         'Raza': _breedController.text,
         'Peso': double.parse(_weightController.text),
         'FechaNacimiento': _dobController.text,
-        'AnimalID': newAnimalRef.id, // Asignar el ID único generado al animal
+        'AnimalID': newAnimalRef.id,
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Animal registrado con éxito')),
       );
-      Navigator.pop(context); // Cierra la pantalla después de registrar
+      Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error al registrar el animal')),
@@ -42,46 +42,99 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Registrar Animal'),
-        backgroundColor: Colors.teal,
+        backgroundColor: Colors.teal[800],
+        elevation: 0,
       ),
-      body: Padding(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.teal[50]!, Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(labelText: 'Nombre del Animal'),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _breedController,
-              decoration: InputDecoration(labelText: 'Raza'),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _weightController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: 'Peso (kg)'),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _dobController,
-              decoration: InputDecoration(labelText: 'Fecha de Nacimiento (DD/MM/AAAA)'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _registerAnimal,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                padding: EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: Text('Registrar Animal'),
-            ),
+            _buildTextField('Nombre del Animal', _nameController),
+            SizedBox(height: 15),
+            _buildTextField('Raza', _breedController),
+            SizedBox(height: 15),
+            _buildTextField('Peso (kg)', _weightController, isNumeric: true),
+            SizedBox(height: 15),
+            _buildDatePickerField('Fecha de Nacimiento', _dobController),
+            SizedBox(height: 30),
+            _buildRegisterButton(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(
+      String label, TextEditingController controller,
+      {bool isNumeric = false}) {
+    return TextField(
+      controller: controller,
+      keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.teal[50],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDatePickerField(
+      String label, TextEditingController controller) {
+    return GestureDetector(
+      onTap: () async {
+        DateTime? pickedDate = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(1900),
+          lastDate: DateTime.now(),
+        );
+        if (pickedDate != null) {
+          String formattedDate =
+              "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+          controller.text = formattedDate;
+        }
+      },
+      child: AbsorbPointer(
+        child: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            labelText: label,
+            filled: true,
+            fillColor: Colors.teal[50],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRegisterButton() {
+    return ElevatedButton(
+      onPressed: _registerAnimal,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.teal[800],
+        padding: EdgeInsets.symmetric(vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+      ),
+      child: Text(
+        'Registrar Animal',
+        style: TextStyle(fontSize: 18, color: Colors.white),
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 import 'vista/auth/login_screen.dart';
 import 'vista/auth/register_screen.dart';
+import 'vista/auth/password_recovery_screen.dart';
 import 'vista/home/home_screen.dart';
 import 'vista/animal_management/animal_management_screen.dart';
 import 'vista/treatments/treatment_vaccine_management_screen.dart';
@@ -38,6 +39,7 @@ class BoviDataApp extends StatelessWidget {
       routes: {
         '/': (context) => LoginPage(),
         '/register': (context) => RegisterPage(),
+        '/password_recovery': (context) => PasswordRecoveryScreen(),
         '/home': (context) => HomePage(),
         '/animal_management': (context) => AnimalRegistrationScreen(),
         '/treatment_vaccine_management': (context) =>

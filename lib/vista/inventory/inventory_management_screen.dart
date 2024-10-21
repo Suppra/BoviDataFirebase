@@ -15,28 +15,22 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
   Future<void> _addOrUpdateMedication() async {
     try {
       if (_selectedMedicationId == null) {
-        // Si no hay medicamento seleccionado, creamos uno nuevo
         DocumentReference newMedicationRef = FirebaseFirestore.instance.collection('medications').doc();
-
         await newMedicationRef.set({
           'name': _medicationNameController.text,
           'quantity': int.parse(_quantityController.text),
           'expirationDate': _expirationDateController.text,
-          'medicationId': newMedicationRef.id, // Asignar el ID único generado al medicamento
+          'medicationId': newMedicationRef.id,
         });
-
         _showAlertDialog('Medicamento agregado con éxito.');
       } else {
-        // Si hay un medicamento seleccionado, actualizamos sus datos
         await FirebaseFirestore.instance.collection('medications').doc(_selectedMedicationId).update({
           'name': _medicationNameController.text,
           'quantity': int.parse(_quantityController.text),
           'expirationDate': _expirationDateController.text,
         });
-
         _showAlertDialog('Medicamento actualizado con éxito.');
       }
-
       _clearFields();
     } catch (e) {
       _showAlertDialog('Error al agregar o actualizar el medicamento.');
@@ -68,88 +62,143 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Gestión de Inventario'),
-        backgroundColor: Colors.teal,
+        title: Text('Gestión de Inventario', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.teal[800],
+        elevation: 0,
       ),
-      body: Padding(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.green[100]!, Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance.collection('medications').snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-
-                  if (snapshot.hasError) {
-                    return Center(child: Text('Error al cargar los medicamentos.'));
-                  }
-
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return Center(child: Text('No hay medicamentos registrados.'));
-                  }
-
-                  final medications = snapshot.data!.docs;
-
-                  return ListView.builder(
-                    itemCount: medications.length,
-                    itemBuilder: (context, index) {
-                      final medication = medications[index];
-                      final medicationName = medication['name'];
-                      final medicationQuantity = medication['quantity'];
-                      final expirationDate = medication['expirationDate'];
-
-                      return Card(
-                        margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                        child: ListTile(
-                          title: Text(medicationName),
-                          subtitle: Text('Cantidad: $medicationQuantity\nFecha de Expiración: $expirationDate'),
-                          leading: Icon(Icons.medication, color: Colors.teal),
-                          trailing: IconButton(
-                            icon: Icon(Icons.edit, color: Colors.teal),
-                            onPressed: () {
-                              _loadMedicationData(medication.id);
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
+              child: _buildMedicationList(),
             ),
             SizedBox(height: 10),
-            TextField(
-              controller: _medicationNameController,
-              decoration: InputDecoration(labelText: 'Nombre del Medicamento'),
-            ),
+            _buildTextField('Nombre del Medicamento', _medicationNameController),
             SizedBox(height: 10),
-            TextField(
-              controller: _quantityController,
-              decoration: InputDecoration(labelText: 'Cantidad'),
-              keyboardType: TextInputType.number,
-            ),
+            _buildTextField('Cantidad', _quantityController, keyboardType: TextInputType.number),
             SizedBox(height: 10),
-            TextField(
-              controller: _expirationDateController,
-              decoration: InputDecoration(labelText: 'Fecha de Expiración (DD/MM/AAAA)'),
-            ),
+            _buildDateField(context, 'Fecha de Expiración', _expirationDateController),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _addOrUpdateMedication,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                padding: EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: Text(_selectedMedicationId == null ? 'Agregar Medicamento' : 'Actualizar Medicamento'),
-            ),
+            _buildActionButton(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildMedicationList() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('medications').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator(color: Colors.teal));
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error al cargar los medicamentos.'));
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(child: Text('No hay medicamentos registrados.'));
+        }
+
+        final medications = snapshot.data!.docs;
+        return ListView.builder(
+          itemCount: medications.length,
+          itemBuilder: (context, index) {
+            final medication = medications[index];
+            final medicationName = medication['name'];
+            final medicationQuantity = medication['quantity'];
+            final expirationDate = medication['expirationDate'];
+
+            return Card(
+              margin: EdgeInsets.symmetric(vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              elevation: 5,
+              child: ListTile(
+                leading: Icon(Icons.medication, color: Colors.teal[700], size: 30),
+                title: Text(
+                  medicationName,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text('Cantidad: $medicationQuantity\nExpira: $expirationDate'),
+                trailing: IconButton(
+                  icon: Icon(Icons.edit, color: Colors.teal),
+                  onPressed: () {
+                    _loadMedicationData(medication.id);
+                  },
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller, {TextInputType keyboardType = TextInputType.text}) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.teal[50],
+        contentPadding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateField(BuildContext context, String label, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      readOnly: true,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.teal[50],
+        contentPadding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide.none,
+        ),
+        suffixIcon: Icon(Icons.calendar_today, color: Colors.teal),
+      ),
+      onTap: () async {
+        DateTime? selectedDate = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+        );
+        if (selectedDate != null) {
+          controller.text = '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}';
+        }
+      },
+    );
+  }
+
+  Widget _buildActionButton() {
+    return ElevatedButton(
+      onPressed: _addOrUpdateMedication,
+      style: ElevatedButton.styleFrom(
+        padding: EdgeInsets.symmetric(vertical: 18),
+        backgroundColor: Colors.teal[800],
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      ),
+      child: Text(
+        _selectedMedicationId == null ? 'Agregar Medicamento' : 'Actualizar Medicamento',
+        style: TextStyle(fontSize: 18, color: Colors.white),
       ),
     );
   }
@@ -158,14 +207,13 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         title: Text('Información'),
         content: Text(message),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text('OK'),
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK', style: TextStyle(color: Colors.teal[800])),
           ),
         ],
       ),

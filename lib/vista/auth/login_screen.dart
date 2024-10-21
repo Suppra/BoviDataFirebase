@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -28,19 +27,7 @@ class _LoginPageState extends State<LoginPage> {
 
       if (userDoc.exists) {
         String userType = userDoc['Tipo'];
-
-        if (userType == 'Ganadero') {
-          Navigator.pushReplacementNamed(context, '/home',
-              arguments: 'Ganadero');
-        } else if (userType == 'Veterinario') {
-          Navigator.pushReplacementNamed(context, '/home',
-              arguments: 'Veterinario');
-        } else if (userType == 'Empleado') {
-          Navigator.pushReplacementNamed(context, '/home',
-              arguments: 'Empleado');
-        } else {
-          _setValidationMessage("¡Tipo de usuario no reconocido!");
-        }
+        Navigator.pushReplacementNamed(context, '/home', arguments: userType);
       } else {
         _setValidationMessage("¡Usuario no encontrado en la base de datos!");
       }
@@ -58,79 +45,87 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Stack(
+            children: [
+              _buildBackground(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: Column(
+                  children: [
+                    SizedBox(height: 120), // Espacio sin el logo superior
+                    _buildHeader(),
+                    SizedBox(height: 40),
+                    _buildTextField(
+                        _userController, "Correo Electrónico", Icons.email),
+                    SizedBox(height: 20),
+                    _buildTextField(_passwordController, "Contraseña", Icons.lock,
+                        isPassword: true),
+                    SizedBox(height: 30),
+                    _buildLoginButton(),
+                    SizedBox(height: 10),
+                    _buildForgotPasswordButton(context), // Nuevo botón
+                    SizedBox(height: 10),
+                    _buildRegisterText(),
+                    SizedBox(height: 20),
+                    _buildErrorMessage(),
+                    SizedBox(height: 50),
+                    _buildLogo(), // Logo en la parte inferior
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackground() {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        height: 300,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [Colors.green[800]!, Colors.green[300]!],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
-        ),
-        padding: EdgeInsets.all(16.0),
-        child: ListView(
-          children: <Widget>[
-            SizedBox(height: 120),
-            Card(
-              color: Colors.white.withOpacity(0.9),
-              margin: EdgeInsets.all(10.0),
-              elevation: 8.0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Container(
-                padding: EdgeInsets.all(16.0),
-                child: Column(
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(15.0),
-                      child: _loadPictureLogin(),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      "Bienvenido a",
-                      style: TextStyle(
-                        fontSize: 26.0,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green[800],
-                      ),
-                    ),
-                    Text(
-                      "BoviData",
-                      style: TextStyle(
-                        fontSize: 30.0,
-                        color: Colors.green[800],
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    _buildTextField(_userController, "Usuario", Icons.person),
-                    SizedBox(height: 16),
-                    _buildTextField(
-                        _passwordController, "Contraseña", Icons.lock,
-                        isPassword: true),
-                    SizedBox(height: 16),
-                    _buildLoginButton(),
-                    SizedBox(height: 5),
-                    Text(
-                      _validationMessage,
-                      style: TextStyle(fontSize: 16.0, color: Colors.red),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/register');
-                      },
-                      child: Text(
-                        '¿No tienes una cuenta? Regístrate aquí',
-                        style: TextStyle(color: Colors.green[800]),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(50),
+            bottomRight: Radius.circular(50),
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '¡Bienvenido!',
+          style: TextStyle(
+            fontSize: 36,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        SizedBox(height: 10),
+        Text(
+          'Inicia sesión en tu cuenta para continuar',
+          style: TextStyle(
+            fontSize: 18,
+            color: Colors.white70,
+          ),
+        ),
+      ],
     );
   }
 
@@ -143,40 +138,92 @@ class _LoginPageState extends State<LoginPage> {
       decoration: InputDecoration(
         prefixIcon: Icon(icon, color: Colors.green[800]),
         labelText: label,
-        labelStyle: TextStyle(color: Colors.green[800]),
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.green[800]!),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.green[600]!),
-          borderRadius: BorderRadius.circular(10),
+        filled: true,
+        fillColor: Colors.green[50],
+        contentPadding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide.none,
         ),
       ),
     );
   }
 
   Widget _buildLoginButton() {
-    return ElevatedButton(
-      onPressed: () {
-        if (_userController.text.isNotEmpty &&
-            _passwordController.text.isNotEmpty) {
-          _validateUser();
-        } else {
-          _showAlertDialog('No se permiten campos vacíos');
-        }
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.green[800],
-        padding: EdgeInsets.symmetric(vertical: 20),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () {
+          if (_userController.text.isNotEmpty &&
+              _passwordController.text.isNotEmpty) {
+            _validateUser();
+          } else {
+            _showAlertDialog('No se permiten campos vacíos');
+          }
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.green[700],
+          padding: EdgeInsets.symmetric(vertical: 18),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: 5,
         ),
-        elevation: 5,
+        child: Text(
+          'Ingresar',
+          style: TextStyle(fontSize: 20, color: Colors.white),
+        ),
       ),
+    );
+  }
+
+  Widget _buildForgotPasswordButton(BuildContext context) {
+    return TextButton(
+      onPressed: () {
+        Navigator.pushNamed(context, '/password_recovery'); // Navega a recuperación
+      },
       child: Text(
-        'Ingresar',
-        style: TextStyle(fontSize: 18, color: Colors.white),
+        '¿Olvidaste tu contraseña?',
+        style: TextStyle(
+          fontSize: 16,
+          color: Colors.green[800],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRegisterText() {
+    return Center(
+      child: TextButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/register');
+        },
+        child: Text(
+          '¿No tienes una cuenta? Regístrate aquí',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.green[800],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorMessage() {
+    return Center(
+      child: Text(
+        _validationMessage,
+        style: TextStyle(fontSize: 16, color: Colors.red),
+      ),
+    );
+  }
+
+  Widget _buildLogo() {
+    return Center(
+      child: Image.asset(
+        'assets/images/logoBovidata.jpg',
+        height: 280,
+        width: 280,
       ),
     );
   }
@@ -185,40 +232,21 @@ class _LoginPageState extends State<LoginPage> {
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Alerta, ha ocurrido un error.'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Text('Error'),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context);
             },
-            child: Text('OK', style: TextStyle(color: Colors.black)),
+            child: Text(
+              'OK',
+              style: TextStyle(color: Colors.green[800]),
+            ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _loadPictureLogin() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final radius = min(constraints.maxHeight / 5, constraints.maxWidth / 5);
-        return Center(
-          child: ClipOval(
-            child: Container(
-              width: radius * 2,
-              height: radius * 2,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: AssetImage('assets/images/logoBovidata.jpg'),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }

@@ -29,7 +29,7 @@ class _RegisterPageState extends State<RegisterPage> {
         'Tipo': _userType,
       });
 
-      Navigator.pop(context); // Cerrar la pantalla de registro
+      Navigator.pop(context);
     } catch (e) {
       setState(() {
         _registerMessage = "¡Error al registrar usuario!";
@@ -41,47 +41,33 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text('Registrar Usuario'),
-        backgroundColor: Colors.green[700],
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Stack(
             children: [
-              SizedBox(height: 20),
-              Text(
-                'Crear una nueva cuenta',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green[800],
-                ),
-              ),
-              SizedBox(height: 10),
-              Text(
-                'Por favor, completa la información para continuar.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                ),
-              ),
-              SizedBox(height: 30),
-              _buildTextField(_emailController, 'Correo Electrónico', Icons.email),
-              SizedBox(height: 20),
-              _buildTextField(_passwordController, 'Contraseña', Icons.lock, isPassword: true),
-              SizedBox(height: 20),
-              _buildDropdown(),
-              SizedBox(height: 30),
-              _buildRegisterButton(),
-              SizedBox(height: 20),
-              Center(
-                child: Text(
-                  _registerMessage,
-                  style: TextStyle(color: Colors.red, fontSize: 16),
+              _buildBackground(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 80),
+                    _buildHeader(),
+                    SizedBox(height: 40),
+                    _buildTextField(_emailController, 'Correo Electrónico', Icons.email),
+                    SizedBox(height: 20),
+                    _buildTextField(_passwordController, 'Contraseña', Icons.lock, isPassword: true),
+                    SizedBox(height: 20),
+                    _buildDropdown(),
+                    SizedBox(height: 30),
+                    _buildRegisterButton(),
+                    SizedBox(height: 10),
+                    _buildLoginButton(),
+                    SizedBox(height: 30),
+                    _buildErrorMessage(),
+                    SizedBox(height: 50),
+                    _buildLogo(),
+                  ],
                 ),
               ),
             ],
@@ -91,17 +77,65 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
+  Widget _buildBackground() {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        height: 300,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.green[800]!, Colors.green[400]!],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(50),
+            bottomRight: Radius.circular(50),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '¡Bienvenido!',
+          style: TextStyle(
+            fontSize: 36,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        SizedBox(height: 10),
+        Text(
+          'Registra una nueva cuenta para continuar',
+          style: TextStyle(
+            fontSize: 18,
+            color: Colors.white70,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildTextField(TextEditingController controller, String label, IconData icon, {bool isPassword = false}) {
     return TextField(
       controller: controller,
       obscureText: isPassword,
       decoration: InputDecoration(
-        labelText: label,
         prefixIcon: Icon(icon, color: Colors.green[800]),
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.green[800]),
         filled: true,
         fillColor: Colors.green[50],
+        contentPadding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(20),
           borderSide: BorderSide.none,
         ),
       ),
@@ -112,11 +146,13 @@ class _RegisterPageState extends State<RegisterPage> {
     return DropdownButtonFormField<String>(
       value: _userType,
       decoration: InputDecoration(
+        prefixIcon: Icon(Icons.person, color: Colors.green[800]),
         labelText: 'Seleccionar Tipo de Usuario',
         filled: true,
         fillColor: Colors.green[50],
+        contentPadding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(20),
           borderSide: BorderSide.none,
         ),
       ),
@@ -139,26 +175,61 @@ class _RegisterPageState extends State<RegisterPage> {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () {
-          if (_emailController.text.isNotEmpty &&
-              _passwordController.text.isNotEmpty) {
+          if (_emailController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
             _registerUser();
           } else {
             _showAlertDialog('No se permiten campos vacíos');
           }
         },
         style: ElevatedButton.styleFrom(
-  backgroundColor: Colors.green[800], 
-  padding: EdgeInsets.symmetric(vertical: 18),
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(10),
-  ),
-  elevation: 5,
-),
-
+          backgroundColor: Colors.green[700],
+          padding: EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: 5,
+        ),
         child: Text(
           'Registrar',
-          style: TextStyle(fontSize: 18, color: Colors.white),
+          style: TextStyle(fontSize: 20, color: Colors.white),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLoginButton() {
+    return Center(
+      child: TextButton(
+        onPressed: () {
+          Navigator.pop(context);
+        },
+        child: Text(
+          '¿Ya tienes una cuenta? Inicia sesión aquí',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.green[800],
+            //decoration: TextDecoration.underline,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorMessage() {
+    return Center(
+      child: Text(
+        _registerMessage,
+        style: TextStyle(color: Colors.red, fontSize: 16),
+      ),
+    );
+  }
+
+  Widget _buildLogo() {
+    return Center(
+      child: Image.asset(
+        'assets/images/logoBovidata.jpg',
+        height: 280,
+        width: 280,
       ),
     );
   }
@@ -167,6 +238,7 @@ class _RegisterPageState extends State<RegisterPage> {
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         title: Text('Error'),
         content: Text(message),
         actions: [
@@ -174,7 +246,10 @@ class _RegisterPageState extends State<RegisterPage> {
             onPressed: () {
               Navigator.pop(context);
             },
-            child: Text('OK', style: TextStyle(color: Colors.black)),
+            child: Text(
+              'OK',
+              style: TextStyle(color: Colors.green[800]),
+            ),
           ),
         ],
       ),
