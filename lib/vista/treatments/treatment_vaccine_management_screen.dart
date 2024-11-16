@@ -104,9 +104,10 @@ class VaccineRegistrationScreen extends StatefulWidget {
 }
 
 class _VaccineRegistrationScreenState extends State<VaccineRegistrationScreen> {
-  final TextEditingController _vaccineNameController = TextEditingController();
   final TextEditingController _doseController = TextEditingController();
   DateTime? _selectedDate;
+  String? _selectedVaccine;
+  DocumentSnapshot? _selectedVaccineDoc;
 
   Future<void> _selectDate() async {
     final DateTime? picked = await showDatePicker(
@@ -119,17 +120,29 @@ class _VaccineRegistrationScreenState extends State<VaccineRegistrationScreen> {
   }
 
   Future<void> _registerVaccine() async {
-    if (_vaccineNameController.text.isEmpty || _doseController.text.isEmpty || _selectedDate == null) {
+    if (_selectedVaccine == null || _doseController.text.isEmpty || _selectedDate == null) {
       _showAlertDialog('Por favor, complete todos los campos.');
       return;
     }
 
     try {
+      final int dose = int.parse(_doseController.text);
+      final int currentQuantity = _selectedVaccineDoc!['quantity'];
+
+      if (dose > currentQuantity) {
+        _showAlertDialog('No hay suficientes dosis disponibles.');
+        return;
+      }
+
       await FirebaseFirestore.instance.collection('vaccines').add({
         'animalId': widget.animalId,
-        'vaccineName': _vaccineNameController.text,
-        'dose': _doseController.text,
+        'vaccineName': _selectedVaccine,
+        'dose': dose,
         'date': Timestamp.fromDate(_selectedDate!), // Cambiado aquí
+      });
+
+      await FirebaseFirestore.instance.collection('medications').doc(_selectedVaccineDoc!.id).update({
+        'quantity': currentQuantity - dose,
       });
 
       _showAlertDialog('Vacuna registrada con éxito.');
@@ -141,7 +154,8 @@ class _VaccineRegistrationScreenState extends State<VaccineRegistrationScreen> {
 
   void _clearFields() {
     setState(() {
-      _vaccineNameController.clear();
+      _selectedVaccine = null;
+      _selectedVaccineDoc = null;
       _doseController.clear();
       _selectedDate = null;
     });
@@ -175,7 +189,7 @@ class _VaccineRegistrationScreenState extends State<VaccineRegistrationScreen> {
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            _buildTextField(_vaccineNameController, 'Nombre de la Vacuna', Icons.vaccines),
+            _buildVaccineDropdown(),
             SizedBox(height: 10),
             _buildTextField(_doseController, 'Dosis', Icons.medical_services),
             SizedBox(height: 10),
@@ -192,9 +206,50 @@ class _VaccineRegistrationScreenState extends State<VaccineRegistrationScreen> {
     );
   }
 
+  Widget _buildVaccineDropdown() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('medications').snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        final medications = snapshot.data!.docs;
+        List<DropdownMenuItem<String>> items = medications.map((medication) {
+          return DropdownMenuItem<String>(
+            value: medication.id,
+            child: Text(medication['name']),
+          );
+        }).toList();
+
+        return DropdownButtonFormField<String>(
+          value: _selectedVaccine,
+          onChanged: (value) {
+            setState(() {
+              _selectedVaccine = value;
+              _selectedVaccineDoc = medications.firstWhere((medication) => medication.id == value);
+            });
+          },
+          decoration: InputDecoration(
+            labelText: 'Vacuna',
+            filled: true,
+            fillColor: Colors.green[50],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15),
+              borderSide: BorderSide.none,
+            ),
+            prefixIcon: Icon(Icons.vaccines, color: Colors.green[800]),
+          ),
+          items: items,
+        );
+      },
+    );
+  }
+
   Widget _buildTextField(TextEditingController controller, String label, IconData icon) {
     return TextField(
       controller: controller,
+      keyboardType: TextInputType.number,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: Colors.green[800]),
@@ -213,7 +268,7 @@ class _VaccineRegistrationScreenState extends State<VaccineRegistrationScreen> {
         padding: EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
-      child: Text(text, style: TextStyle(color: Colors.white)),
+      child: Text(text, style: TextStyle(color: Colors.white, fontSize: 18)),
     );
   }
 }
