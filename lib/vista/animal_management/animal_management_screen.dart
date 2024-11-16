@@ -12,6 +12,7 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
   final TextEditingController _breedController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _dobController = TextEditingController();
+  DateTime? _selectedDate;
 
   Future<void> _registerAnimal() async {
     try {
@@ -22,7 +23,7 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
         'Nombre': _nameController.text,
         'Raza': _breedController.text,
         'Peso': double.parse(_weightController.text),
-        'FechaNacimiento': _dobController.text,
+        'FechaNacimiento': Timestamp.fromDate(_selectedDate!), // Cambiado aquí
         'AnimalID': newAnimalRef.id,
       });
 
@@ -123,7 +124,10 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
         if (pickedDate != null) {
           String formattedDate =
               "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
-          controller.text = formattedDate;
+          setState(() {
+            _selectedDate = pickedDate;
+            controller.text = formattedDate;
+          });
         }
       },
       child: AbsorbPointer(

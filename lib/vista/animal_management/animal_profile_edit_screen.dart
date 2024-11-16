@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class AnimalProfileEditScreen extends StatefulWidget {
   @override
@@ -13,6 +14,7 @@ class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
   final TextEditingController _breedController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _dobController = TextEditingController();
+  DateTime? _selectedDate;
 
   @override
   void didChangeDependencies() {
@@ -35,7 +37,8 @@ class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
           _nameController.text = animalDoc['Nombre'] ?? '';
           _breedController.text = animalDoc['Raza'] ?? '';
           _weightController.text = animalDoc['Peso'].toString();
-          _dobController.text = animalDoc['FechaNacimiento'] ?? '';
+          _selectedDate = (animalDoc['FechaNacimiento'] as Timestamp).toDate();
+          _dobController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
         });
       }
     } catch (e) {
@@ -49,7 +52,7 @@ class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
         'Nombre': _nameController.text,
         'Raza': _breedController.text,
         'Peso': double.parse(_weightController.text),
-        'FechaNacimiento': _dobController.text,
+        'FechaNacimiento': Timestamp.fromDate(_selectedDate!), // Cambiado aquí
       });
 
       _showSnackBar('Datos del animal actualizados con éxito');
@@ -137,7 +140,10 @@ class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
         if (pickedDate != null) {
           String formattedDate =
               "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
-          controller.text = formattedDate;
+          setState(() {
+            _selectedDate = pickedDate;
+            controller.text = formattedDate;
+          });
         }
       },
       child: AbsorbPointer(

@@ -23,7 +23,7 @@ class _VaccinationPlanningScreenState extends State<VaccinationPlanningScreen> {
       await FirebaseFirestore.instance.collection('vaccination_plans').add({
         'animalId': _selectedAnimalId,
         'vaccineName': _vaccineNameController.text,
-        'date': _selectedDate!.toIso8601String(),
+        'date': Timestamp.fromDate(_selectedDate!), // Cambiado aquí
       });
 
       _showAlertDialog('Vacunación planificada con éxito.');

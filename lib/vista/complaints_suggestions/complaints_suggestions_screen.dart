@@ -15,7 +15,7 @@ class _ComplaintsSuggestionsScreenState extends State<ComplaintsSuggestionsScree
       await FirebaseFirestore.instance.collection('complaints_suggestions').add({
         'subject': _subjectController.text,
         'description': _descriptionController.text,
-        'date': DateTime.now().toIso8601String(),
+        'date': Timestamp.now(), // Cambiado aquí
       });
 
       _showAlertDialog('Queja o sugerencia enviada con éxito.');

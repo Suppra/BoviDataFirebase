@@ -15,6 +15,7 @@ class _IncidentMortalityReportScreenState
   final TextEditingController _mortalityReasonController =
       TextEditingController();
   final TextEditingController _dateController = TextEditingController();
+  DateTime? _selectedDate;
 
   @override
   Widget build(BuildContext context) {
@@ -174,8 +175,11 @@ class _IncidentMortalityReportScreenState
           lastDate: DateTime(2100),
         );
         if (selectedDate != null) {
-          controller.text =
+          setState(() {
+            _selectedDate = selectedDate;
+            controller.text =
               '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}';
+          });
         }
       },
     );
@@ -208,7 +212,7 @@ class _IncidentMortalityReportScreenState
       await FirebaseFirestore.instance.collection('incidents').add({
         'animalId': _selectedAnimalId,
         'description': _incidentDescriptionController.text,
-        'date': _dateController.text,
+        'date': Timestamp.fromDate(_selectedDate!), // Cambiado aquí
       });
 
       _showAlertDialog('Incidencia reportada con éxito.');
@@ -230,7 +234,7 @@ class _IncidentMortalityReportScreenState
       await FirebaseFirestore.instance.collection('mortality').add({
         'animalId': _selectedAnimalId,
         'reason': _mortalityReasonController.text,
-        'date': _dateController.text,
+        'date': Timestamp.fromDate(_selectedDate!), // Cambiado aquí
       });
 
       _showAlertDialog('Mortalidad reportada con éxito.');
@@ -246,6 +250,7 @@ class _IncidentMortalityReportScreenState
       _incidentDescriptionController.clear();
       _mortalityReasonController.clear();
       _dateController.clear();
+      _selectedDate = null;
     });
   }
 

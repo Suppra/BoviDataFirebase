@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class InventoryManagementScreen extends StatefulWidget {
   @override
@@ -14,6 +15,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
   final TextEditingController _expirationDateController =
       TextEditingController();
   String? _selectedMedicationId;
+  DateTime? _selectedDate;
 
   Future<void> _addOrUpdateMedication() async {
     try {
@@ -23,7 +25,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
         await newMedicationRef.set({
           'name': _medicationNameController.text,
           'quantity': int.parse(_quantityController.text),
-          'expirationDate': _expirationDateController.text,
+          'expirationDate': Timestamp.fromDate(_selectedDate!), // Cambiado aquí
           'medicationId': newMedicationRef.id,
         });
         _showAlertDialog('Medicamento agregado con éxito.');
@@ -34,7 +36,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
             .update({
           'name': _medicationNameController.text,
           'quantity': int.parse(_quantityController.text),
-          'expirationDate': _expirationDateController.text,
+          'expirationDate': Timestamp.fromDate(_selectedDate!), // Cambiado aquí
         });
         _showAlertDialog('Medicamento actualizado con éxito.');
       }
@@ -54,7 +56,9 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
         _selectedMedicationId = medicationId;
         _medicationNameController.text = medicationDoc['name'];
         _quantityController.text = medicationDoc['quantity'].toString();
-        _expirationDateController.text = medicationDoc['expirationDate'];
+        _selectedDate = (medicationDoc['expirationDate'] as Timestamp).toDate();
+        _expirationDateController.text =
+            '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}';
       });
     }
   }
@@ -65,6 +69,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
       _medicationNameController.clear();
       _quantityController.clear();
       _expirationDateController.clear();
+      _selectedDate = null;
     });
   }
 
@@ -130,7 +135,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
             final medication = medications[index];
             final medicationName = medication['name'];
             final medicationQuantity = medication['quantity'];
-            final expirationDate = medication['expirationDate'];
+            final expirationDate = (medication['expirationDate'] as Timestamp).toDate();
 
             return Card(
               margin: EdgeInsets.symmetric(vertical: 8),
@@ -148,7 +153,7 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
                       color: Colors.green[800]),
                 ),
                 subtitle: Text(
-                  'Cantidad: $medicationQuantity\nExpira: $expirationDate',
+                  'Cantidad: $medicationQuantity\nExpira: ${DateFormat('dd/MM/yyyy').format(expirationDate)}',
                   style: TextStyle(color: Colors.green[600]),
                 ),
                 trailing: IconButton(
@@ -209,8 +214,11 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
           lastDate: DateTime(2100),
         );
         if (selectedDate != null) {
-          controller.text =
+          setState(() {
+            _selectedDate = selectedDate;
+            controller.text =
               '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}';
+          });
         }
       },
     );

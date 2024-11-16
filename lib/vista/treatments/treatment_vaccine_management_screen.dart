@@ -129,7 +129,7 @@ class _VaccineRegistrationScreenState extends State<VaccineRegistrationScreen> {
         'animalId': widget.animalId,
         'vaccineName': _vaccineNameController.text,
         'dose': _doseController.text,
-        'date': DateFormat('dd/MM/yyyy').format(_selectedDate!),
+        'date': Timestamp.fromDate(_selectedDate!), // Cambiado aquí
       });
 
       _showAlertDialog('Vacuna registrada con éxito.');
@@ -218,7 +218,6 @@ class _VaccineRegistrationScreenState extends State<VaccineRegistrationScreen> {
   }
 }
 
-
 class TreatmentRegistrationScreen extends StatefulWidget {
   final String animalId;
 
@@ -254,7 +253,7 @@ class _TreatmentRegistrationScreenState extends State<TreatmentRegistrationScree
         'animalId': widget.animalId,
         'treatmentName': _treatmentNameController.text,
         'details': _detailsController.text,
-        'date': DateFormat('dd/MM/yyyy').format(_selectedDate!),
+        'date': Timestamp.fromDate(_selectedDate!), // Cambiado aquí
       });
 
       _showAlertDialog('Tratamiento registrado con éxito.');
