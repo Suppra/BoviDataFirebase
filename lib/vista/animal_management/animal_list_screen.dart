@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import '../medicalhistory/medical_history_screen.dart'; // Update with the correct path to MedicalHistoryScreen
 
 class AnimalListScreen extends StatelessWidget {
   @override
@@ -36,32 +38,32 @@ class AnimalListScreen extends StatelessWidget {
                 child: CircularProgressIndicator(color: Colors.green[800]),
               );
             }
-
             if (snapshot.hasError) {
-              return Center(child: Text('Error al cargar los datos'));
+              return Center(child: Text('Error al cargar los animales.'));
             }
-
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              return Center(child: Text('No hay animales registrados'));
+              return Center(child: Text('No hay animales registrados.'));
             }
 
             final animals = snapshot.data!.docs;
-
             return ListView.builder(
-              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
               itemCount: animals.length,
               itemBuilder: (context, index) {
                 final animal = animals[index];
                 final animalName = animal['Nombre'] ?? 'Sin nombre';
-                final animalId = animal['AnimalID'] ?? 'ID no disponible';
+                final animalBreed = animal['Raza'] ?? 'Sin raza';
+                final animalWeight = animal['Peso']?.toString() ?? 'Sin peso';
+                final animalDob = (animal['FechaNacimiento'] as Timestamp).toDate();
+                final formattedDob = DateFormat('dd/MM/yyyy').format(animalDob);
 
                 return Card(
-                  elevation: 8,
                   margin: EdgeInsets.symmetric(vertical: 8),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(15),
                   ),
+                  elevation: 5,
                   child: ListTile(
+                    leading: Icon(Icons.pets, color: Colors.green[700], size: 30),
                     title: Text(
                       animalName,
                       style: TextStyle(
@@ -71,12 +73,25 @@ class AnimalListScreen extends StatelessWidget {
                       ),
                     ),
                     subtitle: Text(
-                      'ID: $animalId',
+                      'Raza: $animalBreed\nPeso: $animalWeight kg\nFecha de Nacimiento: $formattedDob',
                       style: TextStyle(color: Colors.green[600]),
                     ),
-                    leading: Icon(Icons.pets, color: Colors.green[400], size: 36),
-                    trailing: _buildActionButtons(
-                        context, animalId, animalName, isMedicalHistory),
+                    trailing: isMedicalHistory
+                        ? IconButton(
+                            icon: Icon(Icons.history, color: Colors.green[400]),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MedicalHistoryScreen(
+                                    animalId: animal.id,
+                                    animalName: animalName,
+                                  ),
+                                ),
+                              );
+                            },
+                          )
+                        : null,
                   ),
                 );
               },
@@ -84,41 +99,6 @@ class AnimalListScreen extends StatelessWidget {
           },
         ),
       ),
-    );
-  }
-
-  Widget _buildActionButtons(BuildContext context, String animalId,
-      String animalName, bool isMedicalHistory) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton(
-          icon: Icon(Icons.edit, color: Colors.blue[400], size: 28),
-          onPressed: () {
-            Navigator.pushNamed(
-              context,
-              '/animal_profile_edit',
-              arguments: {'animalId': animalId},
-            );
-          },
-        ),
-        SizedBox(width: 8),
-        IconButton(
-          icon: Icon(Icons.archive_rounded, color: Colors.green[400], size: 28),
-          onPressed: () {
-            if (isMedicalHistory) {
-              Navigator.pushNamed(
-                context,
-                '/medical_history',
-                arguments: {
-                  'animalId': animalId,
-                  'animalName': animalName,
-                },
-              );
-            }
-          },
-        ),
-      ],
     );
   }
 }
