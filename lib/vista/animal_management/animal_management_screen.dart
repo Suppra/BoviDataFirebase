@@ -15,34 +15,49 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
   DateTime? _selectedDate;
 
   Future<void> _registerAnimal() async {
-    try {
-      DocumentReference newAnimalRef =
-          FirebaseFirestore.instance.collection('animales').doc();
+  try {
+    DocumentReference newAnimalRef =
+        FirebaseFirestore.instance.collection('animales').doc();
 
-      await newAnimalRef.set({
-        'Nombre': _nameController.text,
-        'Raza': _breedController.text,
-        'Peso': double.parse(_weightController.text),
-        'FechaNacimiento': Timestamp.fromDate(_selectedDate!), // Cambiado aquí
-        'AnimalID': newAnimalRef.id,
-      });
+    await newAnimalRef.set({
+      'Nombre': _nameController.text,
+      'Raza': _breedController.text,
+      'Peso': double.parse(_weightController.text),
+      'FechaNacimiento': Timestamp.fromDate(_selectedDate!), // Cambiado aquí
+      'AnimalID': newAnimalRef.id,
+    });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Animal registrado con éxito'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pop(context);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al registrar el animal'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+    // Enviar notificación a empleados y veterinarios
+    await FirebaseFirestore.instance.collection('notifications').add({
+      'title': 'Nuevo Animal Registrado',
+      'message': 'El ganadero ha registrado un nuevo animal.',
+      'timestamp': Timestamp.now(),
+      'userType': 'Empleado', // Notificación para empleados
+    });
+
+    await FirebaseFirestore.instance.collection('notifications').add({
+      'title': 'Nuevo Animal Registrado',
+      'message': 'El ganadero ha registrado un nuevo animal.',
+      'timestamp': Timestamp.now(),
+      'userType': 'Veterinario', // Notificación para veterinarios
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Animal registrado con éxito'),
+        backgroundColor: Colors.green,
+      ),
+    );
+    Navigator.pop(context);
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error al registrar el animal'),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomePage extends StatelessWidget {
   @override
@@ -10,10 +11,23 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('BoviData', style: TextStyle(color: Colors.white)),
+        title: const Text('BoviData', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.green[800],
         elevation: 4,
-       centerTitle: true,
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notifications, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NotificationsScreen(userType: userType),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -25,16 +39,16 @@ class HomePage extends StatelessWidget {
         ),
         child: Column(
           children: [
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildHeader(),
             Expanded(
               child: _buildOptionsGrid(context, userType),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildAnimatedLogoutButton(context),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildLogo(),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -80,7 +94,7 @@ class HomePage extends StatelessWidget {
 
     return GridView.builder(
       padding: const EdgeInsets.all(16.0),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         childAspectRatio: 1.2,
         crossAxisSpacing: 16,
@@ -122,7 +136,7 @@ class HomePage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon, size: 48, color: Colors.green[800]),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Text(
                 label,
                 textAlign: TextAlign.center,
@@ -159,12 +173,12 @@ class HomePage extends StatelessWidget {
               color: Colors.red.withOpacity(0.5),
               spreadRadius: 2,
               blurRadius: 8,
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Center(
-          child: Text(
+          child: const Text(
             'Cerrar Sesión',
             style: TextStyle(
               color: Colors.white,
@@ -190,5 +204,63 @@ class HomePage extends StatelessWidget {
   void _logout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
     Navigator.pushReplacementNamed(context, '/');
+  }
+}
+
+class NotificationsScreen extends StatelessWidget {
+  final String userType;
+
+  NotificationsScreen({required this.userType});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Notificaciones', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.green[800],
+        elevation: 0,
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('notifications')
+            .where('userType', isEqualTo: userType)
+            .orderBy('timestamp', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator(color: Colors.green[800]));
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error al cargar las notificaciones: ${snapshot.error}'));
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('No hay notificaciones.'));
+          }
+
+          final notifications = snapshot.data!.docs;
+          return ListView.builder(
+            itemCount: notifications.length,
+            itemBuilder: (context, index) {
+              final notification = notifications[index];
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                elevation: 5,
+                child: ListTile(
+                  title: Text(notification['title'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(notification['message']),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () {
+                      FirebaseFirestore.instance.collection('notifications').doc(notification.id).delete();
+                    },
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
   }
 }
