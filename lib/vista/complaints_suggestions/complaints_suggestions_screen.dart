@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:googleapis_auth/auth_io.dart';
+import 'package:googleapis/gmail/v1.dart' as gmail;
+import 'dart:convert';
 
 class ComplaintsSuggestionsScreen extends StatefulWidget {
   @override
@@ -15,8 +18,13 @@ class _ComplaintsSuggestionsScreenState extends State<ComplaintsSuggestionsScree
       await FirebaseFirestore.instance.collection('complaints_suggestions').add({
         'subject': _subjectController.text,
         'description': _descriptionController.text,
-        'date': Timestamp.now(), // Cambiado aquí
+        'date': Timestamp.now(),
       });
+
+      await _sendEmail(
+        subject: _subjectController.text,
+        description: _descriptionController.text,
+      );
 
       _showAlertDialog('Queja o sugerencia enviada con éxito.');
       _clearFields();
@@ -25,11 +33,60 @@ class _ComplaintsSuggestionsScreenState extends State<ComplaintsSuggestionsScree
     }
   }
 
+  Future<void> _sendEmail({required String subject, required String description}) async {
+    final clientId = ClientId('YOUR_CLIENT_ID', 'YOUR_CLIENT_SECRET');
+    final scopes = [gmail.GmailApi.gmailSendScope];
+
+    await clientViaUserConsent(clientId, scopes, (url) {
+      debugPrint('Please go to the following URL and grant access:');
+      debugPrint('  => $url');
+      debugPrint('');
+    }).then((AuthClient client) async {
+      final api = gmail.GmailApi(client);
+      final message = gmail.Message()
+        ..raw = base64Url.encode(utf8.encode('Content-Type: text/plain; charset="UTF-8"\n'
+            'MIME-Version: 1.0\n'
+            'Content-Transfer-Encoding: 7bit\n'
+            'to: cristianfwc@gmail.com\n'
+            'from: atencionclientebovidata@gmail.com\n'
+            'subject: Nueva Queja o Sugerencia: $subject\n\n'
+            'Asunto: $subject\n\nDescripción:\n$description'));
+
+      try {
+        await api.users.messages.send(message, 'me');
+        debugPrint('Message sent.');
+      } catch (e) {
+        debugPrint('Message not sent. \n' + e.toString());
+      } finally {
+        client.close();
+      }
+    });
+  }
+
   void _clearFields() {
     setState(() {
       _subjectController.clear();
       _descriptionController.clear();
     });
+  }
+
+  Future<void> _showAlertDialog(String message) {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Text('Información'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text('OK', style: TextStyle(color: Colors.teal[800])),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -91,25 +148,6 @@ class _ComplaintsSuggestionsScreenState extends State<ComplaintsSuggestionsScree
       child: Text(
         'Enviar',
         style: TextStyle(fontSize: 18, color: Colors.white),
-      ),
-    );
-  }
-
-  Future<void> _showAlertDialog(String message) {
-    return showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        title: Text('Información'),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text('OK', style: TextStyle(color: Colors.teal[800])),
-          ),
-        ],
       ),
     );
   }

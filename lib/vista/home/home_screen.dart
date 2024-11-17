@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 class HomePage extends StatelessWidget {
   @override
@@ -124,8 +127,7 @@ class HomePage extends StatelessWidget {
 
   Widget _buildOptionsGrid(BuildContext context, String userType) {
     final List<Map<String, dynamic>> options = [
-      {'label': 'Gestión de Bovinos', 'icon': Icons.pets, 'route': '/animal_management'},
-      {'label': 'Listado de Bovinos', 'icon': Icons.list, 'route': '/animal_list'},
+     
       if (userType == 'Veterinario') ...[
         {'label': 'Tratamientos y Vacunas', 'icon': Icons.medical_services, 'route': '/treatment_vaccine_management'},
         {'label': 'Inventario de Medicamentos', 'icon': Icons.inventory, 'route': '/inventory_management'},
@@ -134,6 +136,8 @@ class HomePage extends StatelessWidget {
         {'label': 'Historial Médico', 'icon': Icons.history, 'route': '/animal_list', 'args': {'isMedicalHistory': true}},
       ],
       if (userType == 'Ganadero') ...[
+        {'label': 'Gestión de Bovinos', 'icon': Icons.pets, 'route': '/animal_management'},
+        {'label': 'Listado de Bovinos', 'icon': Icons.list, 'route': '/animal_list'},
         {'label': 'Quejas y Sugerencias', 'icon': Icons.feedback, 'route': '/complaints_suggestions'},
         {'label': 'Exportación de Datos', 'icon': Icons.file_download, 'route': '/data_export'},
         {'label': 'Historial Médico', 'icon': Icons.history, 'route': '/animal_list', 'args': {'isMedicalHistory': true}},
@@ -169,7 +173,11 @@ class HomePage extends StatelessWidget {
   Widget _buildOptionCard(BuildContext context, IconData icon, String label, String route, {Map<String, dynamic>? args}) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(context, route, arguments: args);
+        if (route == '/data_export') {
+          _showAnimalSelectionDialog(context);
+        } else {
+          Navigator.pushNamed(context, route, arguments: args);
+        }
       },
       child: Card(
         elevation: 8,
@@ -202,6 +210,114 @@ class HomePage extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showAnimalSelectionDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Seleccionar Bovino'),
+          content: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('animales').snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return Center(child: CircularProgressIndicator());
+              }
+
+              final animals = snapshot.data!.docs;
+
+              return ListView.builder(
+                shrinkWrap: true,
+                itemCount: animals.length,
+                itemBuilder: (context, index) {
+                  final animal = animals[index];
+                  return ListTile(
+                    title: Text(animal['Nombre']),
+                    onTap: () {
+                      Navigator.pop(context);
+                      exportDataToPdf(context, animal.id);
+                    },
+                  );
+                },
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> exportDataToPdf(BuildContext context, String animalId) async {
+    final pdf = pw.Document();
+
+    // Obtener datos del bovino
+    final animalDoc = await FirebaseFirestore.instance.collection('animales').doc(animalId).get();
+    final animalData = animalDoc.data();
+
+    // Obtener historial médico
+    final medicalHistorySnapshot = await FirebaseFirestore.instance
+        .collection('medical_history')
+        .where('animalId', isEqualTo: animalId)
+        .get();
+    final medicalHistory = medicalHistorySnapshot.docs.map((doc) => doc.data()).toList();
+
+    // Obtener incidencias
+    final incidentsSnapshot = await FirebaseFirestore.instance
+        .collection('incidents')
+        .where('animalId', isEqualTo: animalId)
+        .get();
+    final incidents = incidentsSnapshot.docs.map((doc) => doc.data()).toList();
+
+    // Crear el contenido del PDF
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text('Datos del Bovino', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 10),
+              pw.Text('Nombre: ${animalData?['Nombre'] ?? 'N/A'}'),
+              pw.Text('Raza: ${animalData?['Raza'] ?? 'N/A'}'),
+              pw.Text('Peso: ${animalData?['Peso'] ?? 'N/A'} kg'),
+              pw.Text('Fecha de Nacimiento: ${animalData?['FechaNacimiento'] != null ? (animalData!['FechaNacimiento'] as Timestamp).toDate().toString() : 'N/A'}'),
+              pw.SizedBox(height: 20),
+              pw.Text('Historial Médico', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 10),
+              ...medicalHistory.map((history) {
+                return pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('Fecha: ${(history['date'] as Timestamp).toDate().toString()}'),
+                    pw.Text('Descripción: ${history['description'] ?? 'N/A'}'),
+                    pw.SizedBox(height: 10),
+                  ],
+                );
+              }).toList(),
+              pw.SizedBox(height: 20),
+              pw.Text('Incidencias', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 10),
+              ...incidents.map((incident) {
+                return pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('Fecha: ${(incident['date'] as Timestamp).toDate().toString()}'),
+                    pw.Text('Descripción: ${incident['description'] ?? 'N/A'}'),
+                    pw.SizedBox(height: 10),
+                  ],
+                );
+              }).toList(),
+            ],
+          );
+        },
+      ),
+    );
+
+    // Mostrar el PDF
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
     );
   }
 

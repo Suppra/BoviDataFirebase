@@ -1,8 +1,6 @@
 name: bovinos
 description: A new Flutter project.
 
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-
 version: 1.0.0+1
 
 environment:
@@ -13,18 +11,21 @@ dependencies:
     sdk: flutter
   firebase_core: ^2.10.0
   firebase_auth: ^4.16.0
-  cloud_firestore: ^4.6.0  # Versión anterior que podría ser estable
+  cloud_firestore: ^4.6.0
   intl: ^0.17.0
   cupertino_icons: ^1.0.2
   http: any
-
-
+  pdf: ^3.6.0
+  printing: ^5.9.0
+  mailer: ^5.0.0
+  googleapis: any
+  googleapis_auth: any
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^1.0.0
-  pdf: ^3.8.1
+  
 
 flutter:
   uses-material-design: true
