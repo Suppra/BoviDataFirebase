@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../medicalhistory/medical_history_screen.dart'; // Update with the correct path to MedicalHistoryScreen
+import '../animal_management/animal_profile_edit_screen.dart'; // Update with the correct path to AnimalProfileEditScreen
 
 class AnimalListScreen extends StatelessWidget {
   @override
@@ -76,8 +77,11 @@ class AnimalListScreen extends StatelessWidget {
                       'Raza: $animalBreed\nPeso: $animalWeight kg\nFecha de Nacimiento: $formattedDob',
                       style: TextStyle(color: Colors.green[600]),
                     ),
-                    trailing: isMedicalHistory
-                        ? IconButton(
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isMedicalHistory)
+                          IconButton(
                             icon: Icon(Icons.history, color: Colors.green[400]),
                             onPressed: () {
                               Navigator.push(
@@ -90,8 +94,24 @@ class AnimalListScreen extends StatelessWidget {
                                 ),
                               );
                             },
-                          )
-                        : null,
+                          ),
+                        if (!isMedicalHistory)
+                          IconButton(
+                            icon: Icon(Icons.edit, color: Colors.green[400]),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AnimalProfileEditScreen(),
+                                  settings: RouteSettings(
+                                    arguments: {'animalId': animal.id},
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                      ],
+                    ),
                   ),
                 );
               },

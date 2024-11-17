@@ -56,7 +56,7 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.green[400]!, Colors.white],
+            colors: [Colors.green[100]!, Colors.white],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -64,25 +64,32 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
         padding: const EdgeInsets.all(20.0),
         child: Center(
           child: Card(
-            elevation: 5,
+            elevation: 10,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: ListView(
-                shrinkWrap: true,
+              child: Column(
                 children: [
-                  _buildTextField('Nombre del Animal', _nameController),
-                  SizedBox(height: 15),
-                  _buildTextField('Raza', _breedController),
-                  SizedBox(height: 15),
-                  _buildTextField('Peso (kg)', _weightController,
-                      isNumeric: true),
-                  SizedBox(height: 15),
-                  _buildDatePickerField('Fecha de Nacimiento', _dobController),
-                  SizedBox(height: 30),
-                  _buildRegisterButton(),
+                  Expanded(
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        _buildTextField('Nombre del Animal', _nameController, Icons.pets),
+                        SizedBox(height: 15),
+                        _buildTextField('Raza', _breedController, Icons.category),
+                        SizedBox(height: 15),
+                        _buildTextField('Peso (kg)', _weightController, Icons.line_weight, isNumeric: true),
+                        SizedBox(height: 15),
+                        _buildDatePickerField('Fecha de Nacimiento', _dobController),
+                        SizedBox(height: 30),
+                        _buildRegisterButton(),
+                      ],
+                    ),
+                  ),
+                  Spacer(),
+                  _buildLogo(),
                 ],
               ),
             ),
@@ -92,14 +99,13 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
     );
   }
 
-  Widget _buildTextField(
-      String label, TextEditingController controller,
-      {bool isNumeric = false}) {
+  Widget _buildTextField(String label, TextEditingController controller, IconData icon, {bool isNumeric = false}) {
     return TextField(
       controller: controller,
       keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
       decoration: InputDecoration(
         labelText: label,
+        prefixIcon: Icon(icon, color: Colors.green[800]),
         filled: true,
         fillColor: Colors.green[50],
         contentPadding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
@@ -111,8 +117,7 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
     );
   }
 
-  Widget _buildDatePickerField(
-      String label, TextEditingController controller) {
+  Widget _buildDatePickerField(String label, TextEditingController controller) {
     return GestureDetector(
       onTap: () async {
         DateTime? pickedDate = await showDatePicker(
@@ -135,10 +140,10 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
           controller: controller,
           decoration: InputDecoration(
             labelText: label,
+            prefixIcon: Icon(Icons.calendar_today, color: Colors.green[800]),
             filled: true,
             fillColor: Colors.green[50],
             contentPadding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-            suffixIcon: Icon(Icons.calendar_today, color: Colors.green[800]),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
               borderSide: BorderSide.none,
@@ -164,6 +169,16 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
       label: Text(
         'Registrar Animal',
         style: TextStyle(fontSize: 18, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildLogo() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20.0),
+      child: Image.asset(
+        'assets/images/logoBovidata.jpg', // Asegúrate de que el logo esté en la carpeta assets y configurado en pubspec.yaml
+        height: 100,
       ),
     );
   }
