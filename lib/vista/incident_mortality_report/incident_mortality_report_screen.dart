@@ -214,7 +214,12 @@ class _IncidentMortalityReportScreenState
         'description': _incidentDescriptionController.text,
         'date': Timestamp.fromDate(_selectedDate!), // Cambiado aquí
       });
-
+       // Enviar notificación al ganadero
+      await _sendNotification(
+        'Nueva Incidencia Reportada',
+        'Se ha reportado una nueva incidencia para el animal con ID: $_selectedAnimalId.',
+        'Ganadero',
+      );
       _showAlertDialog('Incidencia reportada con éxito.');
       _clearFields();
     } catch (e) {
@@ -236,14 +241,26 @@ class _IncidentMortalityReportScreenState
         'reason': _mortalityReasonController.text,
         'date': Timestamp.fromDate(_selectedDate!), // Cambiado aquí
       });
-
+        // Enviar notificación al ganadero
+      await _sendNotification(
+        'Nueva Mortalidad Reportada',
+        'Se ha reportado una nueva mortalidad para el animal con ID: $_selectedAnimalId.',
+        'Ganadero',
+      );
       _showAlertDialog('Mortalidad reportada con éxito.');
       _clearFields();
     } catch (e) {
       _showAlertDialog('Error al reportar la mortalidad.');
     }
   }
-
+        Future<void> _sendNotification(String title, String message, String userType) async {
+    await FirebaseFirestore.instance.collection('notifications').add({
+      'title': title,
+      'message': message,
+      'timestamp': Timestamp.now(),
+      'userType': userType,
+    });
+  }
   void _clearFields() {
     setState(() {
       _selectedAnimalId = null;

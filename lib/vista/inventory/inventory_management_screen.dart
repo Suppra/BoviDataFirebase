@@ -28,6 +28,18 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
           'expirationDate': Timestamp.fromDate(_selectedDate!), // Cambiado aquí
           'medicationId': newMedicationRef.id,
         });
+        // Enviar notificación al ganadero y al empleado
+        await _sendNotification(
+          'Nuevo Medicamento Agregado',
+          'Se ha agregado un nuevo medicamento: ${_medicationNameController.text}.',
+          'Ganadero',
+        );
+
+        await _sendNotification(
+          'Nuevo Medicamento Agregado',
+          'Se ha agregado un nuevo medicamento: ${_medicationNameController.text}.',
+          'Empleado',
+        );
         _showAlertDialog('Medicamento agregado con éxito.');
       } else {
         await FirebaseFirestore.instance
@@ -38,6 +50,18 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
           'quantity': int.parse(_quantityController.text),
           'expirationDate': Timestamp.fromDate(_selectedDate!), // Cambiado aquí
         });
+        // Enviar notificación al ganadero y al empleado
+        await _sendNotification(
+          'Medicamento Actualizado',
+          'Se ha actualizado el medicamento: ${_medicationNameController.text}.',
+          'Ganadero',
+        );
+
+        await _sendNotification(
+          'Medicamento Actualizado',
+          'Se ha actualizado el medicamento: ${_medicationNameController.text}.',
+          'Empleado',
+        );
         _showAlertDialog('Medicamento actualizado con éxito.');
       }
       _clearFields();
@@ -45,7 +69,14 @@ class _InventoryManagementScreenState extends State<InventoryManagementScreen> {
       _showAlertDialog('Error al agregar o actualizar el medicamento.');
     }
   }
-
+     Future<void> _sendNotification(String title, String message, String userType) async {
+    await FirebaseFirestore.instance.collection('notifications').add({
+      'title': title,
+      'message': message,
+      'timestamp': Timestamp.now(),
+      'userType': userType,
+    });
+  }
   void _loadMedicationData(String medicationId) async {
     DocumentSnapshot medicationDoc = await FirebaseFirestore.instance
         .collection('medications')

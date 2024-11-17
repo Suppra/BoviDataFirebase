@@ -26,14 +26,32 @@ class _VaccinationPlanningScreenState extends State<VaccinationPlanningScreen> {
         'dose': _doseController.text,
         'date': Timestamp.fromDate(_selectedDate!), // Cambiado aquí
       });
+// Enviar notificación al ganadero y al empleado
+      await _sendNotification(
+        'Nueva Vacunación Planificada',
+        'Se ha planificado una nueva vacunación para el ${_selectedVaccine}.',
+        'Ganadero',
+      );
 
+      await _sendNotification(
+        'Nueva Vacunación Planificada',
+        'Se ha planificado una nueva vacunación para el ${_selectedVaccine}.',
+        'Empleado',
+      );
       _showAlertDialog('Vacunación planificada con éxito.');
       _clearFields();
     } catch (e) {
       _showAlertDialog('Error al planificar la vacunación.');
     }
   }
-
+Future<void> _sendNotification(String title, String message, String userType) async {
+    await FirebaseFirestore.instance.collection('notifications').add({
+      'title': title,
+      'message': message,
+      'timestamp': Timestamp.now(),
+      'userType': userType,
+    });
+  }
   void _clearFields() {
     setState(() {
       _selectedAnimalId = null;
