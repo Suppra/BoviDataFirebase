@@ -42,7 +42,7 @@ class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
         });
       }
     } catch (e) {
-      _showSnackBar('Error al cargar los datos del animal');
+      _showSnackBar('Error al cargar los datos del Bovino');
     }
   }
 
@@ -55,7 +55,7 @@ class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
         'FechaNacimiento': Timestamp.fromDate(_selectedDate!), // Cambiado aquí
       });
 
-      _showSnackBar('Datos del animal actualizados con éxito');
+      _showSnackBar('Datos del Bovino actualizados con éxito');
       Navigator.pop(context);
     } catch (e) {
       _showSnackBar('Error al actualizar los datos');
@@ -78,7 +78,7 @@ class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Editar Perfil del Animal', style: TextStyle(color: Colors.white)),
+        title: Text('Editar Perfil del Bovino', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.green[800],
         elevation: 0,
         centerTitle: true,
@@ -94,7 +94,7 @@ class _AnimalProfileEditScreenState extends State<AnimalProfileEditScreen> {
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            _buildTextField('Nombre del Animal', _nameController),
+            _buildTextField('Nombre del Bovino', _nameController),
             SizedBox(height: 15),
             _buildTextField('Raza', _breedController),
             SizedBox(height: 15),

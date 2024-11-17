@@ -16,7 +16,7 @@ class AnimalListScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Listado de Animales',
+          'Listado de Bovinos',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.green[800],
@@ -40,10 +40,10 @@ class AnimalListScreen extends StatelessWidget {
               );
             }
             if (snapshot.hasError) {
-              return Center(child: Text('Error al cargar los animales.'));
+              return Center(child: Text('Error al cargar los Bovinos.'));
             }
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              return Center(child: Text('No hay animales registrados.'));
+              return Center(child: Text('No hay Bovinos registrados.'));
             }
 
             final animals = snapshot.data!.docs;

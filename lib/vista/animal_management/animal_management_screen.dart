@@ -46,21 +46,21 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
       // Enviar notificación a empleados y veterinarios
       await FirebaseFirestore.instance.collection('notifications').add({
         'title': 'Nuevo Animal Registrado',
-        'message': 'El ganadero ha registrado un nuevo animal.',
+        'message': 'El ganadero ha registrado un nuevo Bovino.',
         'timestamp': Timestamp.now(),
         'userType': 'Empleado', // Notificación para empleados
       });
 
       await FirebaseFirestore.instance.collection('notifications').add({
         'title': 'Nuevo Animal Registrado',
-        'message': 'El ganadero ha registrado un nuevo animal.',
+        'message': 'El ganadero ha registrado un nuevo Bovino.',
         'timestamp': Timestamp.now(),
         'userType': 'Veterinario', // Notificación para veterinarios
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Animal registrado con éxito'),
+          content: Text('Bovino registrado con éxito'),
           backgroundColor: Colors.green,
         ),
       );
@@ -68,7 +68,7 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error al registrar el animal'),
+          content: Text('Error al registrar el Bovino'),
           backgroundColor: Colors.red,
         ),
       );
@@ -79,7 +79,7 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Registrar Animal', style: TextStyle(color: Colors.white)),
+        title: Text('Registrar Bovinos', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.green[800],
         elevation: 0,
         centerTitle: true,
@@ -105,7 +105,7 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildTextField('Nombre del Animal', _nameController, Icons.pets),
+                    _buildTextField('Nombre del Bovino', _nameController, Icons.pets),
                     SizedBox(height: 15),
                     _buildBreedSelector(),
                     SizedBox(height: 15),
@@ -238,7 +238,7 @@ class _AnimalRegistrationScreenState extends State<AnimalRegistrationScreen> {
       ),
       icon: Icon(Icons.check, color: Colors.white),
       label: Text(
-        'Registrar Animal',
+        'Registrar Bovino',
         style: TextStyle(fontSize: 18, color: Colors.white),
       ),
     );

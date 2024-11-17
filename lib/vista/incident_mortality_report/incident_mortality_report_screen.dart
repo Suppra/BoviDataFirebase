@@ -66,17 +66,17 @@ class _IncidentMortalityReportScreenState
         }
 
         if (snapshot.hasError) {
-          return Center(child: Text('Error al cargar los animales.'));
+          return Center(child: Text('Error al cargar los Bovinos.'));
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Center(child: Text('No hay animales registrados.'));
+          return Center(child: Text('No hay Bovinos registrados.'));
         }
 
         final animals = snapshot.data!.docs;
         return DropdownButtonFormField<String>(
           value: _selectedAnimalId,
-          hint: Text('Seleccione un Animal'),
+          hint: Text('Seleccione un Bovino'),
           items: animals.map((animal) {
             return DropdownMenuItem<String>(
               value: animal.id,

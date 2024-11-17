@@ -124,8 +124,8 @@ class HomePage extends StatelessWidget {
 
   Widget _buildOptionsGrid(BuildContext context, String userType) {
     final List<Map<String, dynamic>> options = [
-      {'label': 'Gestión de Animales', 'icon': Icons.pets, 'route': '/animal_management'},
-      {'label': 'Listado de Animales', 'icon': Icons.list, 'route': '/animal_list'},
+      {'label': 'Gestión de Bovinos', 'icon': Icons.pets, 'route': '/animal_management'},
+      {'label': 'Listado de Bovinos', 'icon': Icons.list, 'route': '/animal_list'},
       if (userType == 'Veterinario') ...[
         {'label': 'Tratamientos y Vacunas', 'icon': Icons.medical_services, 'route': '/treatment_vaccine_management'},
         {'label': 'Inventario de Medicamentos', 'icon': Icons.inventory, 'route': '/inventory_management'},
