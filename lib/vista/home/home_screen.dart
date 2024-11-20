@@ -410,18 +410,28 @@ class NotificationsScreen extends StatelessWidget {
             itemCount: notifications.length,
             itemBuilder: (context, index) {
               final notification = notifications[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                elevation: 5,
-                child: ListTile(
-                  title: Text(notification['title'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(notification['message']),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () {
-                      FirebaseFirestore.instance.collection('notifications').doc(notification.id).delete();
-                    },
+              return Dismissible(
+                key: Key(notification.id),
+                direction: DismissDirection.endToStart,
+                onDismissed: (direction) {
+                  FirebaseFirestore.instance.collection('notifications').doc(notification.id).delete();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Notificación eliminada')),
+                  );
+                },
+                background: Container(
+                  color: Colors.red,
+                  alignment: Alignment.centerRight,
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Icon(Icons.delete, color: Colors.white),
+                ),
+                child: Card(
+                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  elevation: 5,
+                  child: ListTile(
+                    title: Text(notification['title'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text(notification['message']),
                   ),
                 ),
               );
