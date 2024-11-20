@@ -420,7 +420,7 @@ class NotificationsScreen extends StatelessWidget {
                   );
                 },
                 background: Container(
-                  color: Colors.red,
+                  color: const Color.fromARGB(255, 69, 175, 37),
                   alignment: Alignment.centerRight,
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Icon(Icons.delete, color: Colors.white),
